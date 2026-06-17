@@ -195,7 +195,7 @@ function adaptationPrompt(a) {
 
 // ---------- animated terminal sessions ----------
 // Trusted template data — authored here, never derived from frontmatter or markdown. 'out'/'txt'/
-// 'ok' line text may carry inline HTML (e.g. <span class="t-gold">…</span>); typed 'sh'/'cmd'
+// 'ok' line text may carry inline HTML (e.g. <span class="t-accent">…</span>); typed 'sh'/'cmd'
 // lines are plain text. Rendered by terminalHtml(), animated by assets/terminal.js;
 // sessionToText() is the plain-text fallback embedded in "Copy as Markdown".
 const SESSIONS = {
@@ -210,7 +210,7 @@ const SESSIONS = {
       ['out', 'Inferred type: bug · labels: ios, ux'],
       ['out', 'Drafted repro steps + acceptance criteria'],
       ['blank'],
-      ['ok', 'Created issue <span class="t-gold">#482</span> — “Favorites: drag-to-reorder snaps back”'],
+      ['ok', 'Created issue <span class="t-accent">#482</span> — “Favorites: drag-to-reorder snaps back”'],
     ],
   },
   onboarding: {
@@ -224,7 +224,7 @@ const SESSIONS = {
       ['txt', 'It syncs local edits with the backend: SyncQueue batches changes, retries on failure…'],
       ['cmd', 'rename the SyncManager class to SyncCoordinator everywhere'],
       ['out', 'Found 23 references across 9 files'],
-      ['ok', 'Renamed — review the diff with <span class="t-gold">git diff</span>'],
+      ['ok', 'Renamed — review the diff with <span class="t-accent">git diff</span>'],
     ],
   },
   'create-issue': {
@@ -237,7 +237,7 @@ const SESSIONS = {
       ['out', 'Inferred type: bug · labels: ios, ux'],
       ['out', 'Drafted repro steps + acceptance criteria'],
       ['blank'],
-      ['ok', 'Created issue <span class="t-gold">#482</span> — “Favorites: list flashes when filtering by date”'],
+      ['ok', 'Created issue <span class="t-accent">#482</span> — “Favorites: list flashes when filtering by date”'],
     ],
   },
   'issue-to-branch': {
@@ -246,9 +246,9 @@ const SESSIONS = {
     lines: [
       ['cmd', '/issue-to-branch #482'],
       ['blank'],
-      ['out', 'Read issue <span class="t-gold">#482</span> — “Favorites: list flashes when filtering by date”'],
+      ['out', 'Read issue <span class="t-accent">#482</span> — “Favorites: list flashes when filtering by date”'],
       ['out', 'Inferred scope from the repo: FavoritesView, FilterBar'],
-      ['out', 'Created branch <span class="t-gold">fix/482-favorites-filter-flash</span>'],
+      ['out', 'Created branch <span class="t-accent">fix/482-favorites-filter-flash</span>'],
       ['blank'],
       ['ok', 'Branch plan written — Docs/branches/fix-482-favorites-filter-flash.md'],
     ],
@@ -260,7 +260,7 @@ const SESSIONS = {
       ['cmd', '/smart-commit'],
       ['blank'],
       ['out', '14 changed files — grouping by module…'],
-      ['out', 'Plan: <span class="t-gold">3 commits</span> — Fix: filter debounce · Test: favorites filter · Docs: changelog'],
+      ['out', 'Plan: <span class="t-accent">3 commits</span> — Fix: filter debounce · Test: favorites filter · Docs: changelog'],
       ['out', 'Plan approved'],
       ['blank'],
       ['ok', '3 atomic commits created — nothing pushed'],
@@ -276,7 +276,7 @@ const SESSIONS = {
       ['out', 'Wrote FavoritesFilterTests (4 cases) · running the suite…'],
       ['out', '128 tests — 1 failure → fixed a stale date mock, re-running…'],
       ['blank'],
-      ['ok', 'Suite green (<span class="t-gold">128/128</span>) — Test Plan annotated in the branch plan'],
+      ['ok', 'Suite green (<span class="t-accent">128/128</span>) — Test Plan annotated in the branch plan'],
     ],
   },
   'finish-branch': {
@@ -288,7 +288,7 @@ const SESSIONS = {
       ['out', 'Plan 100% · tests green · no debug code left'],
       ['out', 'Branch plan finalized and archived'],
       ['blank'],
-      ['ok', 'Opened PR <span class="t-gold">#91</span> — “Fix: favorites list flash when filtering”'],
+      ['ok', 'Opened PR <span class="t-accent">#91</span> — “Fix: favorites list flash when filtering”'],
     ],
   },
   cleanup: {
@@ -300,7 +300,7 @@ const SESSIONS = {
       ['out', 'Scanning the branch diff for code noise…'],
       ['out', 'Found: 2 debug prints · 1 commented-out block · 3 obvious comments'],
       ['blank'],
-      ['ok', 'Report ready — re-run with <span class="t-gold">--fix</span> to remove them'],
+      ['ok', 'Report ready — re-run with <span class="t-accent">--fix</span> to remove them'],
     ],
   },
   'update-branch-plan': {
@@ -312,7 +312,7 @@ const SESSIONS = {
       ['out', 'Comparing recent commits against the branch plan…'],
       ['out', '2 tasks matched at ≥80% confidence → checked · 1 stays open'],
       ['blank'],
-      ['ok', 'Plan updated — phase <span class="t-gold">2 of 3</span> complete'],
+      ['ok', 'Plan updated — phase <span class="t-accent">2 of 3</span> complete'],
     ],
   },
   deepthink: {
@@ -334,7 +334,7 @@ const SESSIONS = {
       ['cmd', '/create-branch add rate limiting to the api client'],
       ['blank'],
       ['out', 'Read working tree — 3 changed files in src/api/'],
-      ['out', 'Inferred branch: <span class="t-gold">feat/api-client-rate-limiting</span>'],
+      ['out', 'Inferred branch: <span class="t-accent">feat/api-client-rate-limiting</span>'],
       ['out', 'Plan approved'],
       ['blank'],
       ['ok', 'Switched to a new branch — nothing committed yet'],
@@ -350,7 +350,7 @@ const SESSIONS = {
       ['out', 'Fetched origin/main (12 new commits) — rebasing…'],
       ['out', 'Replayed 4 commits · restored your stash'],
       ['blank'],
-      ['ok', 'Branch up to date with <span class="t-gold">main</span> — no conflicts'],
+      ['ok', 'Branch up to date with <span class="t-accent">main</span> — no conflicts'],
     ],
   },
   'pr-partner': {
@@ -363,7 +363,7 @@ const SESSIONS = {
       ['out', 'Scanned the diff: 1 risk (unbounded retry), 2 nits'],
       ['out', 'Triaged 3 open review threads — 1 still unresolved'],
       ['blank'],
-      ['ok', 'Verdict: <span class="t-gold">Needs work</span> — bound the retry, then ready'],
+      ['ok', 'Verdict: <span class="t-accent">Needs work</span> — bound the retry, then ready'],
     ],
   },
   ultrafix: {
@@ -393,7 +393,7 @@ function terminalHtml(s) {
     return `<span class="t-line" data-delay="500"><span class="t-dim">&#9210; ${l[1]}</span></span>`;
   }).join('');
   // Surface the session's final result in the image label so screen-reader users get the outcome,
-  // not just the setup. okLine strips any inline HTML (e.g. <span class="t-gold">) from the 'ok' line.
+  // not just the setup. okLine strips any inline HTML (e.g. <span class="t-accent">) from the 'ok' line.
   const okLine = (s.lines.find((l) => l[0] === 'ok') || [null, ''])[1].replace(/<[^>]+>/g, '');
   return `<div class="terminal" data-terminal role="img" aria-label="Example terminal session: ${escAttr(s.about)}${okLine ? '. Result: ' + escAttr(okLine) : ''}">
 <div class="t-bar"><span class="t-dot r"></span><span class="t-dot y"></span><span class="t-dot g"></span><span class="t-title">${esc(s.title)}</span><button class="t-replay" type="button" aria-label="Replay the session">&#8635; replay</button></div>
@@ -601,6 +601,35 @@ npm install -g @openai/codex</pre><p><a href="./getting-started.html">Which one?
 <div class="flow">${loop.map(node).join(arrow)}</div>
 <h3 style="margin-top:30px">Plus, at any moment</h3>
 <div class="flow">${anytime.map(node).join('')}</div></section>
+
+<section class="container why-skills"><div class="kicker">why skills</div>
+<h2>Repetitive work is exactly what a skill is for.</h2>
+<p class="muted" style="max-width:820px">A skill is a written playbook your agent follows step by step. The payoff is biggest on the rituals you repeat all day &mdash; the multi-step dances you do the same way every time, where forgetting step&nbsp;3 quietly costs you twenty minutes. Write the dance down once, and run it with a single command &mdash; in any repo, forever.</p>
+<div class="why-grid">
+<ul class="why-points">
+<li><strong>Consistent every time.</strong> The same steps run the same way &mdash; nothing skipped because it&rsquo;s late and you&rsquo;re tired.</li>
+<li><strong>Your conventions, baked in.</strong> Branch names, labels, commit style, test commands &mdash; written once, applied everywhere.</li>
+<li><strong>Repetition becomes one command.</strong> The boring multi-step rituals collapse into a single invocation you can trigger anywhere.</li>
+<li><strong>Shareable and auditable.</strong> It&rsquo;s just markdown &mdash; hand a teammate your workflow in one PR, and read exactly what the agent will do before it does it.</li>
+</ul>
+<figure class="repeat-demo">
+<div class="repeat-head"><span class="lbl">By hand &middot; every task</span><span class="issue">issue #482</span></div>
+<ul class="repeat-steps">
+<li class="repeat-step"><span class="si">1</span>Open the issue, re-read the scope</li>
+<li class="repeat-step"><span class="si">2</span>Think up a branch name that fits convention</li>
+<li class="repeat-step"><span class="si">3</span>Create the branch (worktree if it&rsquo;s risky)</li>
+<li class="repeat-step"><span class="si">4</span>Write a plan doc &mdash; goals, steps, test plan</li>
+<li class="repeat-step"><span class="si">5</span>Link the plan back to the issue</li>
+</ul>
+<div class="repeat-arrow">one command replaces all of it</div>
+<div class="repeat-cmd"><span class="p">&gt;</span> <span class="c">/issue-to-branch #482</span><span class="ok">&#10003; branch + plan ready, built from the issue</span></div>
+</figure>
+</div>
+<blockquote class="author-note">
+<p>For months I started every task the same way: open the issue, re-read the scope, invent a branch name that matched our convention, create the branch, spin up a plan doc, list the steps, link it back. The same ten-minute warm-up before any real work &mdash; <em>every single time</em>.</p>
+<p>One afternoon I wrote the whole ritual down as a skill. Now I type <span class="cmd">/issue-to-branch #482</span> and the agent runs the entire warm-up in one shot, the same way every time. That was the moment skills clicked for me: the parts of my day that were pure repetition turned into a single command.</p>
+<footer>&mdash; Alexandre, building ai-devkit</footer>
+</blockquote></section>
 
 <section class="container"><h2>Not on the stack a skill was written for? Adapt it.</h2>
 <p class="muted" style="max-width:780px">A skill is a written playbook, not a compiled binary — so it doesn&rsquo;t have to be ported by hand. Every skill page ends with an <strong>Adapt to your platform</strong> prompt: paste it into your agent, tell it your stack, and the agent rewrites the skill for your project. Each skill is tagged with how well it travels:</p>
