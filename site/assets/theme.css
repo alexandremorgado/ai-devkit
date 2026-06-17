@@ -81,7 +81,10 @@ details.fold>summary:focus-visible{outline-offset:-2px;}
 .skip{position:absolute;left:-9999px;}
 .skip:focus{position:fixed;left:12px;top:12px;z-index:30;background:var(--accent);color:#1a1500;padding:8px 14px;border-radius:var(--radius-sm);}
 
-.container { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+/* Inline-only padding: using physical `padding: 0 24px` here zeroed the vertical padding of any
+   element that also carries a vertical-padding class (e.g. `section.container`, `.container.content`),
+   because the shorthand set top/bottom to 0. padding-inline composes cleanly with block padding. */
+.container { max-width: var(--maxw); margin: 0 auto; padding-inline: 24px; }
 
 /* Top nav */
 .nav {
@@ -116,7 +119,7 @@ details.fold>summary:focus-visible{outline-offset:-2px;}
 .kicker { color: var(--accent-text); font-size: 13px; letter-spacing: 1.6px; text-transform: uppercase; margin-bottom: 14px; }
 
 /* Sections */
-section { padding: 44px 0; }
+section { padding-block: 44px; }   /* block-only so it composes with .container's inline padding */
 h2 { font-size: 24px; margin: 0 0 18px; font-weight: 600; letter-spacing: -0.2px; }
 h3 { font-size: 18px; margin: 28px 0 10px; font-weight: 600; }
 .muted { color: var(--text-secondary); }
@@ -159,7 +162,7 @@ h3 { font-size: 18px; margin: 28px 0 10px; font-weight: 600; }
 .detail-head { padding: 48px 0 24px; border-bottom: 1px solid var(--border); }
 .detail-head h1 { font-size: 34px; margin: 10px 0 8px; font-weight: 600; }
 .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.content { padding: 32px 0; }
+.content { padding-block: 32px; }
 .content p { color: var(--text); opacity: .9; }
 .content ul, .content ol { color: var(--text); opacity: .9; }
 .content h2 { font-size: 22px; margin-top: 34px; }
