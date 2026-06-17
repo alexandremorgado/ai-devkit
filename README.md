@@ -49,11 +49,11 @@ A skill is invoked by typing `/its-name` in Claude Code, or `$its-name` in Codex
 | Your branch fell behind main | `/update-from-branch main` | Merge/rebase from main, auto-stashing dirty work, conflicts surfaced |
 | The working tree is messy | `/smart-commit` | 2–5 atomic commits, plan shown first, never pushes |
 | Before you push | `/ensure-tests` | Decides what needs tests, runs the suite, fixes failures to 100% |
-| Time to review | `/pr-partner 482` | Metadata + CI + code-risk + comment triage → a merge verdict |
 | The work feels done | `/finish-branch` | Readiness checks, plan archived, PR opened or updated |
 | Anytime, before review | `/cleanup --branch` | Finds debug prints, leftover comments, commented-out code |
 | Stuck on something hard | `/deepthink …the problem…` | Structured extended reasoning → an implementation strategy |
 | A bug won't reproduce or won't die | `/ultrafix …the symptom…` | Isolated worktrees + structured logging → root cause + verified fix |
+| Want a second agent's take | `/codex-buddy review this branch` | Codex reviews or debugs independently; Claude cross-checks the findings |
 | The plan drifted from reality | `/update-branch-plan` | Conservatively syncs plan checkboxes with your commits |
 
 ## The core idea: adapt, don't install
@@ -78,12 +78,12 @@ Exactly the contents of `skills/` — twelve `SKILL.md` playbooks, no hooks, age
 | `update-from-branch` | Sync the current branch from main (merge/rebase), preserving dirty work. |
 | `smart-commit` | Group changes into atomic, semantically-prefixed commits. |
 | `ensure-tests` | Decide whether tests are needed, run the suite, fix failures, annotate the plan. |
-| `pr-partner` | Review a PR end to end — metadata, CI, code-risk, comment triage, merge verdict. |
 | `finish-branch` | Validate readiness, run tests/build, finalize the plan, open/update the PR. |
 | `cleanup` | Detect transitional comments, debug code, and commented-out code. |
 | `update-branch-plan` | Update branch-plan checkboxes from recent work. |
 | `deepthink` | Extended reasoning for complex problems. |
 | `ultrafix` | Debug a stubborn bug with isolated worktrees and structured logging. |
+| `codex-buddy` | Bring in Codex as a second agent for review, a second opinion, debugging, or delegated implementation. |
 
 The live **[Catalog](https://alexandremorgado.github.io/ai-devkit/catalog.html)** is the always-current list, with a copy-paste example and the full playbook on every skill's page.
 

@@ -7,11 +7,11 @@
     "update-from-branch",
     "smart-commit",
     "ensure-tests",
-    "pr-partner",
     "finish-branch",
     "cleanup",
     "update-branch-plan",
     "deepthink",
-    "ultrafix"
+    "ultrafix",
+    "codex-buddy"
   ]
 }

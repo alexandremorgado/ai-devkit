@@ -116,11 +116,11 @@ The skills chain into one loop — from "someone found a bug" to "PR opened". Us
 | Your branch fell behind main | `/update-from-branch main` | Merge/rebase from main, auto-stashing dirty work, conflicts surfaced |
 | You've been coding and the tree is messy | `/smart-commit` | 2–5 atomic commits, plan shown first, never pushes |
 | Before you push | `/ensure-tests` | Decides what needs tests, runs the suite, fixes failures to 100% |
-| Time to review | `/pr-partner 482` | Metadata + CI + code-risk + comment triage → a merge verdict |
 | The work feels done | `/finish-branch` | Readiness checks, plan archived, PR opened or updated |
 | Anytime, before review | `/cleanup --branch` | Finds debug prints, leftover comments, commented-out code |
 | Stuck on something genuinely hard | `/deepthink …the problem…` | Structured extended reasoning → an implementation strategy |
 | A bug won't reproduce or won't die | `/ultrafix …the symptom…` | Isolated worktrees + structured logging → root cause + verified fix |
+| Want a second agent's take | `/codex-buddy review this branch` | Codex reviews or debugs independently; Claude cross-checks the findings |
 | The plan drifted from reality | `/update-branch-plan` | Conservatively syncs plan checkboxes with your commits |
 
 The "You type" column shows the Claude Code form — in Codex, type `$the-name` instead (e.g. `$smart-commit`), or just name the skill in plain words.

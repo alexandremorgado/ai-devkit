@@ -134,9 +134,17 @@ function inline(s) {
       return SAFE_LINK.test(u) ? `<a href="${quoteEsc(u)}">${text}</a>` : text;
     });
 }
+// ---------- section permalinks ----------
+// Stable anchor id from heading text (strip markdown/HTML, collapse to hyphens) + a hover "#" link,
+// so any section/heading can be deep-linked (e.g. #why-skills). Used by the home page and mdToHtml.
+const slugify = (s) => String(s).toLowerCase().replace(/<[^>]+>/g, '').replace(/&[a-z]+;/g, ' ')
+  .replace(/[`*_]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'section';
+const anchorLink = (id) => `<a class="anchor" href="#${id}" aria-label="Permalink to this section">#</a>`;
+
 function mdToHtml(md) {
   const lines = md.split('\n');
   let html = '', i = 0;
+  const seen = new Set();
   const flushList = (items, ordered) => `<${ordered ? 'ol' : 'ul'}>${items.map((x) => `<li>${inline(x)}</li>`).join('')}</${ordered ? 'ol' : 'ul'}>`;
   while (i < lines.length) {
     const line = lines[i];
@@ -153,7 +161,15 @@ function mdToHtml(md) {
       continue;
     }
     const h = line.match(/^(#{1,4})\s+(.*)$/);
-    if (h) { html += `<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`; i++; continue; }
+    if (h) {
+      const lvl = h[1].length;
+      if (lvl === 1) { html += `<h1>${inline(h[2])}</h1>`; i++; continue; }
+      const base = slugify(h[2]); let id = base, n = 2;
+      while (seen.has(id)) id = `${base}-${n++}`;
+      seen.add(id);
+      html += `<h${lvl} id="${id}">${inline(h[2])}${anchorLink(id)}</h${lvl}>`;
+      i++; continue;
+    }
     if (line.startsWith('> ')) { let q = ''; while (i < lines.length && lines[i].startsWith('> ')) { q += lines[i].slice(2) + ' '; i++; } html += `<blockquote>${inline(q.trim())}</blockquote>`; continue; }
     if (/^[-*]\s+/.test(line)) { const items = []; while (i < lines.length && /^[-*]\s+/.test(lines[i])) { items.push(lines[i].replace(/^[-*]\s+/, '')); i++; } html += flushList(items, false); continue; }
     if (/^\d+\.\s+/.test(line)) { const items = []; while (i < lines.length && /^\d+\.\s+/.test(lines[i])) { items.push(lines[i].replace(/^\d+\.\s+/, '')); i++; } html += flushList(items, true); continue; }
@@ -246,11 +262,14 @@ const SESSIONS = {
     lines: [
       ['cmd', '/issue-to-branch #482'],
       ['blank'],
-      ['out', 'Read issue <span class="t-accent">#482</span> — “Favorites: list flashes when filtering by date”'],
-      ['out', 'Inferred scope from the repo: FavoritesView, FilterBar'],
-      ['out', 'Created branch <span class="t-accent">fix/482-favorites-filter-flash</span>'],
+      ['out', 'Read issue <span class="t-accent">#482</span> — “Favorites: list flashes when filtering by date” (+ 3 comments)'],
+      ['out', 'Analyzed the repo for scope: FavoritesView, FilterBar, FavoritesStore'],
+      ['out', 'Created branch <span class="t-accent">fix/482-favorites-filter-flash</span> off origin/main'],
+      ['out', 'Drafted a development plan — goals, phased steps, test plan'],
+      ['out', 'Committed the plan + stored issue metadata for PR auto-linking'],
+      ['out', 'Moved <span class="t-accent">#482</span> to “In Progress” on the project board'],
       ['blank'],
-      ['ok', 'Branch plan written — Docs/branches/fix-482-favorites-filter-flash.md'],
+      ['ok', 'Branch + plan ready — review it, then start coding'],
     ],
   },
   'smart-commit': {
@@ -353,19 +372,6 @@ const SESSIONS = {
       ['ok', 'Branch up to date with <span class="t-accent">main</span> — no conflicts'],
     ],
   },
-  'pr-partner': {
-    title: 'your-repo — claude',
-    about: 'the pr-partner skill reviewing a pull request',
-    lines: [
-      ['cmd', '/pr-partner 482'],
-      ['blank'],
-      ['out', 'PR #482 — 9 files, +214/−37 · CI green · linked to issue #471'],
-      ['out', 'Scanned the diff: 1 risk (unbounded retry), 2 nits'],
-      ['out', 'Triaged 3 open review threads — 1 still unresolved'],
-      ['blank'],
-      ['ok', 'Verdict: <span class="t-accent">Needs work</span> — bound the retry, then ready'],
-    ],
-  },
   ultrafix: {
     title: 'your-repo — claude',
     about: 'the ultrafix skill isolating a flaky bug across worktrees',
@@ -377,6 +383,20 @@ const SESSIONS = {
       ['out', 'Root cause: a shared clock not reset between tests'],
       ['blank'],
       ['ok', 'Fix verified across 50 runs — worktrees cleaned up'],
+    ],
+  },
+  'codex-buddy': {
+    title: 'your-repo — claude',
+    about: 'the codex-buddy skill getting an independent review from a second agent (Codex)',
+    lines: [
+      ['cmd', '/codex-buddy review my changes on this branch'],
+      ['blank'],
+      ['out', 'Gathered context — branch diff (9 files) + your test and lint conventions'],
+      ['out', 'Ran <span class="t-accent">codex exec</span> read-only for an independent review…'],
+      ['out', 'Codex returned 3 findings · cross-checking against the repo'],
+      ['out', 'Filtered 1 false positive · 2 hold up (1 real bug, 1 nit)'],
+      ['blank'],
+      ['ok', 'Second opinion in — the retry loop is unbounded; fix, then ship'],
     ],
   },
 };
@@ -555,7 +575,6 @@ function homePage(assets) {
     ['update-from-branch', 'Pull the latest main into your branch — auto-stashing dirty work and surfacing conflicts safely.'],
     ['smart-commit', 'Group a messy working tree into 2–5 clean, atomic commits. Shows you the plan first; never pushes.'],
     ['ensure-tests', 'Decide what needs tests, run the suite, and fix failures until everything passes.'],
-    ['pr-partner', 'Review the PR end to end — metadata, CI, code-risk, and review-comment triage with a merge verdict.'],
     ['finish-branch', 'Check the branch is really done, finalize its plan, and open (or update) the PR.'],
   ];
   const anytime = [
@@ -564,6 +583,7 @@ function homePage(assets) {
     ['update-branch-plan', 'Keep the branch plan honest — sync its checkboxes with what you actually committed.'],
     ['deepthink', 'Structured extended reasoning for hard problems — decompose, weigh options, produce a strategy.'],
     ['ultrafix', 'Hunt a stubborn bug with isolated worktrees and structured debug logging — evidence before fix.'],
+    ['codex-buddy', 'Bring in a second agent (Codex) for an independent review, a second opinion, or a deeper debugging pass — then cross-check what it finds.'],
   ];
   const node = ([slug, blurb]) => {
     const a = bySlug.get(slug);
@@ -577,7 +597,7 @@ function homePage(assets) {
   const body = `<header class="hero"><div class="container hero-grid">
 <div>
 <div class="kicker">open source</div>
-<h1>Teach your AI coding agent proven dev workflows.</h1>
+<h1>Teach your AI coding agent proven dev workflows</h1>
 <p>ai-devkit is a toolbox you install into an AI coding agent — <strong>Claude Code</strong> or <strong>Codex</strong>. One install teaches the agent a battle-tested daily loop: turn a sentence into a GitHub issue, an issue into a planned branch, messy changes into clean commits, and a finished branch into a PR.</p>
 <p class="muted">${counts} · install once, use in every repo</p>
 <p style="margin-top:18px"><a class="btn" href="./getting-started.html" style="text-decoration:none">Start here — from zero</a> <a class="link" href="./catalog.html" style="margin-left:14px">Browse the catalog &rarr;</a></p>
@@ -585,9 +605,9 @@ function homePage(assets) {
 ${terminal}
 </div></header>
 
-<section class="container"><div class="callout"><p><strong>New to AI coding agents?</strong> An agent is a program that runs in your terminal: you type what you want in plain English, and it reads your code, edits files, and runs commands — showing its work and asking before anything risky. If you can use a terminal, you can use everything here. <a href="./getting-started.html">The Start-here guide assumes zero AI experience &rarr;</a></p></div></section>
+<section class="container" id="new-to-agents"><div class="callout"><p><strong>New to AI coding agents?</strong> An agent is a program that runs in your terminal: you type what you want in plain English, and it reads your code, edits files, and runs commands — showing its work and asking before anything risky. If you can use a terminal, you can use everything here. <a href="./getting-started.html">The Start-here guide assumes zero AI experience &rarr;</a></p></div></section>
 
-<section class="container"><h2>Set up in three steps</h2>
+<section class="container" id="setup"><h2>Set up in three steps${anchorLink('setup')}</h2>
 <div class="steps">
 <div class="step"><span class="n">1</span><h3>Get an agent</h3><p>Claude Code or Codex — both run in your terminal, and everything here works with both.</p><pre>npm install -g @anthropic-ai/claude-code
 npm install -g @openai/codex</pre><p><a href="./getting-started.html">Which one? Details in Start here &rarr;</a></p></div>
@@ -596,14 +616,14 @@ npm install -g @openai/codex</pre><p><a href="./getting-started.html">Which one?
 <div class="step"><span class="n">3</span><h3>Use it — in any repo</h3><p>The workflows now work everywhere you code. Try one:</p><pre>/create-issue the favorites list flashes when filtering</pre><p>In Codex the same skill is <code>$create-issue</code>. No agent at all? The skills are just markdown — <a href="./getting-started.html">read or paste the playbooks directly</a>.</p></div>
 </div></section>
 
-<section class="container"><h2>What you get: the daily loop</h2>
+<section class="container" id="daily-loop"><h2>What you get: the daily loop${anchorLink('daily-loop')}</h2>
 <p class="muted" style="max-width:780px">These workflows chain into one loop — from &ldquo;someone found a bug&rdquo; to &ldquo;PR opened&rdquo;. Each is a <strong>skill</strong>: a written playbook the agent follows step by step, using your repo&rsquo;s own labels, branches, and test commands. Click one for what it does, a copy-paste example, and the full playbook.</p>
 <div class="flow">${loop.map(node).join(arrow)}</div>
 <h3 style="margin-top:30px">Plus, at any moment</h3>
 <div class="flow">${anytime.map(node).join('')}</div></section>
 
-<section class="container why-skills"><div class="kicker">why skills</div>
-<h2>Repetitive work is exactly what a skill is for.</h2>
+<section class="container why-skills" id="why-skills"><div class="kicker">why skills</div>
+<h2>Repetitive work is exactly what a skill is for${anchorLink('why-skills')}</h2>
 <p class="muted" style="max-width:820px">A skill is a written playbook your agent follows step by step. The payoff is biggest on the rituals you repeat all day &mdash; the multi-step dances you do the same way every time, where forgetting step&nbsp;3 quietly costs you twenty minutes. Write the dance down once, and run it with a single command &mdash; in any repo, forever.</p>
 <div class="why-grid">
 <ul class="why-points">
@@ -631,7 +651,7 @@ npm install -g @openai/codex</pre><p><a href="./getting-started.html">Which one?
 <footer>&mdash; Alexandre, building ai-devkit</footer>
 </blockquote></section>
 
-<section class="container"><h2>Not on the stack a skill was written for? Adapt it.</h2>
+<section class="container" id="adapt"><h2>Not on the stack a skill was written for? Adapt it${anchorLink('adapt')}</h2>
 <p class="muted" style="max-width:780px">A skill is a written playbook, not a compiled binary — so it doesn&rsquo;t have to be ported by hand. Every skill page ends with an <strong>Adapt to your platform</strong> prompt: paste it into your agent, tell it your stack, and the agent rewrites the skill for your project. Each skill is tagged with how well it travels:</p>
 <div class="legend">
 <div><span class="badge portable">portable</span> works on any stack as-is</div>
@@ -639,7 +659,7 @@ npm install -g @openai/codex</pre><p><a href="./getting-started.html">Which one?
 <div><span class="badge platform-specific">platform-specific</span> read it for the pattern, don&rsquo;t port it</div>
 </div></section>
 
-<section class="container"><h2>Built something other teams could use?</h2>
+<section class="container" id="contribute"><h2>Built something other teams could use?${anchorLink('contribute')}</h2>
 <p class="muted" style="max-width:780px">A skill is just a markdown file — if your team has a workflow worth sharing, contributing it takes one PR. <a href="./contribute.html">How to contribute &rarr;</a></p></section>`;
   return layout({ title: 'Home', active: '', depth: 0, body, description: 'ai-devkit is a toolbox you install into an AI coding agent — Claude Code or Codex. One install teaches the agent a battle-tested daily loop: turn a sentence into a GitHub issue, an issue into a planned branch, messy changes into clean commits, and a finished branch into a PR.', path: '' });
 }

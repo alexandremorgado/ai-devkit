@@ -124,6 +124,13 @@ h2 { font-size: 24px; margin: 0 0 18px; font-weight: 600; letter-spacing: -0.2px
 h3 { font-size: 18px; margin: 28px 0 10px; font-weight: 600; }
 .muted { color: var(--text-secondary); }
 
+/* Section permalinks — a hover "#" beside headings + scroll offset so the sticky nav doesn't cover the target */
+:where(h2,h3,h4)[id], section[id] { scroll-margin-top: 80px; }
+.anchor { margin-left: 8px; font-weight: 400; font-size: .82em; color: var(--text-tertiary); text-decoration: none; opacity: 0; transition: opacity .12s, color .12s; }
+:where(h2,h3,h4):hover > .anchor, :where(h2,h3,h4):focus-within > .anchor, .anchor:focus-visible { opacity: 1; }
+.anchor:hover { color: var(--accent-text); text-decoration: none; }
+@media (hover: none) { .anchor { opacity: .5; } }   /* touch devices can't hover — keep anchors discoverable */
+
 /* Cards / catalog grid */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
 .card {

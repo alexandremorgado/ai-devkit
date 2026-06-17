@@ -8,7 +8,7 @@
     {
       "name": "ai-devkit",
       "source": "./plugins/ai-devkit",
-      "description": "Reusable agent skills for the everyday dev loop — create-issue, issue-to-branch, smart-commit, ensure-tests, pr-partner, finish-branch and more. Discoverable in Claude Code and Codex; each skill ships an adapt-to-your-stack prompt."
+      "description": "Reusable agent skills for the everyday dev loop — create-issue, issue-to-branch, smart-commit, ensure-tests, finish-branch and more, plus codex-buddy for a second-agent review. Discoverable in Claude Code and Codex; each skill ships an adapt-to-your-stack prompt."
     }
   ]
 }

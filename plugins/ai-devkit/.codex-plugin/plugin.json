@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "ai-devkit",
     "shortDescription": "Reusable AI developer workflows",
-    "longDescription": "Install a toolbox of reusable AI-coding-agent workflows in Codex. The plugin ships the repo's skills — issue creation, branch planning, smart commits, test selection, PR review, branch finishing, cleanup, deep reasoning, and more. Each skill is designed to be adapted to your stack rather than copied blindly.",
+    "longDescription": "Install a toolbox of reusable AI-coding-agent workflows in Codex. The plugin ships the repo's skills — issue creation, branch planning, smart commits, test selection, branch finishing, cleanup, deep reasoning, a second-agent review pass, and more. Each skill is designed to be adapted to your stack rather than copied blindly.",
     "developerName": "Alexandre Morgado",
     "category": "Productivity",
     "capabilities": [
@@ -31,9 +31,9 @@
     "defaultPrompt": [
       "Use ai-devkit to plan and finish this branch",
       "Adapt an ai-devkit skill to this repo",
-      "Review this PR with pr-partner"
+      "Hunt a flaky test with ultrafix"
     ],
-    "brandColor": "#E1C87C",
+    "brandColor": "#3FD9C0",
     "screenshots": []
   }
 }
