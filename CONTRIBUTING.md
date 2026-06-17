@@ -40,7 +40,7 @@ A skill directory may include a `demo.html` — a small, self-contained animated
 
 ## Templates
 
-Use the matching template under `.github/` (issue/PR) and the per-type frontmatter in `docs/content-model.md`. Keep `SKILL.md` bodies focused — large reference material goes in `references/`.
+Follow the per-type frontmatter in `docs/content-model.md`. Keep `SKILL.md` bodies focused — large reference material goes in `references/`.
 
 ## Governance
 

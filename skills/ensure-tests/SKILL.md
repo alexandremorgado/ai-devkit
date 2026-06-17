@@ -112,11 +112,11 @@ To run a single failing test, use your framework's filter (see `test-patterns.md
 **Regression check FIRST** — was this test passing on the base branch?
 
 ```bash
-git stash
-git checkout "$BASE_BRANCH"
-# Re-run the specific failing test
-git checkout -
-git stash pop
+# Use a throwaway worktree so your working tree (and untracked files) are never disturbed.
+WT=$(mktemp -d)
+git worktree add -q "$WT" "$BASE_BRANCH"
+( cd "$WT" && $TEST_CMD )   # re-run the specific failing test on the base branch
+git worktree remove --force "$WT"
 ```
 
 - **Passed on `$BASE_BRANCH`, fails now → presume a CODE REGRESSION** (fix the code, not the test).

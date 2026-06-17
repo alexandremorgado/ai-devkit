@@ -58,7 +58,7 @@ The work is parked in a named stash — it is never thrown away, even if later s
 ### Phase 3: Fetch the Latest
 
 ```bash
-git fetch origin "$SOURCE"
+git fetch origin "$SOURCE"   # syncs from the REMOTE origin/$SOURCE (the common case, e.g. main)
 
 # How far apart are we? (behind = commits to pull in; ahead = your local commits)
 BEHIND=$(git rev-list --count "HEAD..origin/$SOURCE")

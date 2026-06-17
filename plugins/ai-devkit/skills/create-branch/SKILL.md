@@ -88,6 +88,7 @@ If the user asks for isolation (says "worktree", "isolated", "in parallel", or p
 ```bash
 NAME="feat/rate-limiting-api-client"   # from Phase 2
 git switch -c "$NAME" "$BASE"          # branch off the detected base
+# To keep committed work from your current branch instead, branch off HEAD: git switch -c "$NAME"
 ```
 
 **Isolated — new git worktree** (leaves the current tree untouched; good for parallel work):

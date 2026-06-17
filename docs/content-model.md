@@ -59,7 +59,7 @@ A **skill** directory may include a `demo.html` — a small animated visualizati
 
 This repo is public, so two simple rules govern what ships:
 
-- **Secrets — never, anywhere.** Tokens, keys, and credentials are env-var only and are never committed or built into `dist/` (CI secret-scans both the tree and the build). This rule has no exceptions.
+- **Secrets — never, anywhere.** Tokens, keys, and credentials are env-var only and are never committed or built into `dist/` (CI secret-scans the tracked tree). This rule has no exceptions.
 - **`publish` controls the site.** `publish: private` is the **default**; the generator excludes private assets from the build and never emits their full bodies. An asset reaches the generated site only when it is `publish: public` **and** on the reviewed allowlist (`site/public-allowlist.json`).
 
 Everything shipped here is public. The private/allowlist mechanism stays available so you can fork the repo and keep some skills off your own published site (a one-line opt-in per asset, fail-closed by default).

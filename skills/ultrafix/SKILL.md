@@ -112,18 +112,26 @@ A fix is "verified" only when the reproduction that used to fail now passes repe
 
 ### Phase 8: Clean Up
 
-Remove all debug logging and tear down the scratch worktrees:
+**First make sure the winning fix is on your working branch** — if it only lives on a hypothesis branch, bring it over (cherry-pick or merge) before deleting anything.
 
 ```bash
-grep -rn 'ULTRAFIX' .        # find every probe you added — remove them all
+# 1) Salvage check: any commit listed here is UNIQUE to a scratch branch — move it to your
+#    working branch before cleanup, or you will lose it.
+for h in h1 h2 h3; do git log --oneline "$BASE..ultrafix/$h" 2>/dev/null; done
+
+# 2) Remove every debug probe you added.
+grep -rn 'ULTRAFIX' .
+
+# 3) Tear down the scratch worktrees, then delete the branches with -d (NOT -D).
+#    -d refuses to delete a branch with unmerged commits, so it can't silently drop the fix.
 git worktree remove "../${ROOT##*/}-h1"
 git worktree remove "../${ROOT##*/}-h2"
 git worktree remove "../${ROOT##*/}-h3"
-git branch -D ultrafix/h1 ultrafix/h2 ultrafix/h3 2>/dev/null
+git branch -d ultrafix/h1 ultrafix/h2 ultrafix/h3   # errors here = unsalvaged commits; review before forcing
 git worktree prune
 ```
 
-Leave only the minimal fix (plus a regression test, if one was missing) on the working branch.
+Only fall back to `git branch -D` after you have confirmed the branch's unique commits are already on your working branch. Leave only the minimal fix (plus a regression test, if one was missing) on the working branch.
 
 ## Quick Reference
 

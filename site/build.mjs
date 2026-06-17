@@ -159,7 +159,10 @@ function mdToHtml(md) {
     if (/^\d+\.\s+/.test(line)) { const items = []; while (i < lines.length && /^\d+\.\s+/.test(lines[i])) { items.push(lines[i].replace(/^\d+\.\s+/, '')); i++; } html += flushList(items, true); continue; }
     if (/^(-{3,}|\*{3,})$/.test(line.trim())) { html += '<hr>'; i++; continue; }
     if (line.trim() === '') { i++; continue; }
-    let para = ''; while (i < lines.length && lines[i].trim() !== '' && !/^(#{1,4}\s|```|[-*]\s|\d+\.\s|>\s|\|)/.test(lines[i])) { para += lines[i] + ' '; i++; }
+    // Consume the current line first so progress is guaranteed — a lone non-table line
+    // starting with `|` matches no block branch above and the loop guard below also skips
+    // `|` lines, so without this the index would never advance (infinite loop).
+    let para = lines[i]; i++; while (i < lines.length && lines[i].trim() !== '' && !/^(#{1,4}\s|```|[-*]\s|\d+\.\s|>\s|\|)/.test(lines[i])) { para += ' ' + lines[i]; i++; }
     html += `<p>${inline(para.trim())}</p>`;
   }
   return html;
@@ -590,7 +593,7 @@ ${terminal}
 npm install -g @openai/codex</pre><p><a href="./getting-started.html">Which one? Details in Start here &rarr;</a></p></div>
 <div class="step"><span class="n">2</span><h3>Install ai-devkit</h3><p>Inside a Claude Code session, type:</p><pre>/plugin marketplace add alexandremorgado/ai-devkit
 /plugin install ai-devkit@ai-devkit</pre><p>In Codex it&rsquo;s the same two commands, prefixed <code>codex plugin</code> in your shell.</p></div>
-<div class="step"><span class="n">3</span><h3>Use it — in any repo</h3><p>The workflows now work everywhere you code. Try one:</p><pre>/create-issue the favorites list flashes when filtering</pre><p>In Codex the same skill is <code>$create-issue</code>. No agent at all? The tools are plain scripts you can <a href="./getting-started.html">clone and run directly</a>.</p></div>
+<div class="step"><span class="n">3</span><h3>Use it — in any repo</h3><p>The workflows now work everywhere you code. Try one:</p><pre>/create-issue the favorites list flashes when filtering</pre><p>In Codex the same skill is <code>$create-issue</code>. No agent at all? The skills are just markdown — <a href="./getting-started.html">read or paste the playbooks directly</a>.</p></div>
 </div></section>
 
 <section class="container"><h2>What you get: the daily loop</h2>
@@ -766,19 +769,15 @@ function defaultGettingStarted() {
   return (`## Install & run
 
 ### Claude Code
-Add this repo as a plugin marketplace, then \`/plugin install\`. Or install a single skill into \`~/.agents/skills/\`.
+Add this repo as a plugin marketplace, then \`/plugin install ai-devkit@ai-devkit\`. Or drop a single skill's \`SKILL.md\` into \`~/.claude/skills/<name>/\`.
 
-### Other agents / non-Claude-Code
-Clone and run a tool directly — they are plain scripts, no Claude required:
-\`\`\`
-npm ci
-node skills/<name>/scripts/<tool>.mjs --help
-\`\`\`
+### No agent?
+A skill is just markdown — clone the repo and read any \`skills/<name>/SKILL.md\` as a step-by-step playbook, or paste it into any LLM.
 
 ### Adapt a skill to your platform
 Open any skill, copy its **Adapt to your platform** prompt, fill in your stack, and paste it into Claude or Codex.
 
-> Secrets are never committed — tools read tokens from environment variables. URLs are not secrets.`);
+> Secrets are never committed — tokens are read from environment variables, never files.`);
 }
 function defaultContribute() {
   return (`## Share an asset
@@ -786,9 +785,9 @@ function defaultContribute() {
 1. Add a directory under \`skills/\`, \`tools/\`, \`tutorials/\`, \`cases/\`, or \`best-practices/\`.
 2. Add the markdown (\`SKILL.md\` for skills) with frontmatter per the content model.
 3. Set \`portability\` honestly and write \`adaptation_notes\` so other teams can adapt it.
-4. Run \`npm run build\` to preview your page, then open a PR.
+4. Add the asset to \`site/public-allowlist.json\`, run \`npm run build:public\` to preview, then open a PR.
 
-**Two rules:** never commit secrets, and \`publish: private\` is the default — an asset reaches the public portal only when it is \`publish: public\` **and** on the reviewed allowlist. Internal performance findings, endpoints, and flag names stay private.`);
+**Two rules:** never commit secrets, and \`publish: private\` is the default — an asset reaches the site only when it is \`publish: public\` **and** on the reviewed allowlist.`);
 }
 
 build();
