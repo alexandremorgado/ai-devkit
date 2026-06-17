@@ -1,0 +1,28 @@
+name: test
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build the public site + validate the plugin mirror
+        run: npm test
+      - name: Secret scan (fail on committed credentials or env files)
+        run: |
+          # No env/credential files should ever be tracked (they are gitignored).
+          if git ls-files | grep -iE '(^|/)\.env(rc)?($|\.)|\.pem$|\.p12$' ; then
+            echo "::error::a credential-bearing or env file is tracked — it must be gitignored, not committed"; exit 1
+          fi
+          # Bearer tokens and JWT-shaped values anywhere in the working tree.
+          if grep -rIE "Bearer [A-Za-z0-9._-]{12,}|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}" . \
+               --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist ; then
+            echo "::error::possible committed credential"; exit 1
+          fi
+          echo "no committed tokens or env files found"

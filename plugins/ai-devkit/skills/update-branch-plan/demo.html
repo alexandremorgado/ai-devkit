@@ -1,0 +1,44 @@
+<div class="demo-seq" data-steps="4" data-interval="1350">
+  <style>
+    .ub-wrap { font-family: var(--font); display: grid; gap: 12px; }
+    .ub-phase { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .ub-status { font-size: 11.5px; font-weight: 700; padding: 2px 9px; border-radius: 999px; transition: color .4s, background .4s; }
+    .ub-status::after { content: "\23F3 In Progress"; }
+    .ub-status { color: var(--accent-text); background: var(--accent-soft); }
+    .demo-seq[data-step="4"] .ub-status { color: var(--green); background: color-mix(in srgb, var(--green) 11%, transparent); }
+    .demo-seq[data-step="4"] .ub-status::after { content: "\2705 Complete"; }
+
+    .ub-task { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary);
+               padding: 6px 8px; border-radius: 6px; background: transparent; transition: background .4s, color .4s; }
+    .ub-check { font-weight: 700; }
+    .ub-check::before { content: "\2610"; color: var(--text-tertiary); transition: color .4s; }
+    .ub-txt { flex: 1; transition: color .4s; }
+    .ub-via { font-family: var(--mono); font-size: 10.5px; color: var(--blue); opacity: 0; transform: translateX(-6px);
+              padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--blue) 12%, transparent);
+              border: 1px solid color-mix(in srgb, var(--blue) 40%, transparent); transition: opacity .4s, transform .4s; white-space: nowrap; }
+
+    /* task 1 checks at step>=1, task 2 at >=2, task 3 at >=3 (cumulative) */
+    .demo-seq[data-step="1"] .ub-task:nth-child(2) .ub-check::before,
+    .demo-seq[data-step="2"] .ub-task:nth-child(2) .ub-check::before, .demo-seq[data-step="2"] .ub-task:nth-child(3) .ub-check::before,
+    .demo-seq[data-step="3"] .ub-task:nth-child(2) .ub-check::before, .demo-seq[data-step="3"] .ub-task:nth-child(3) .ub-check::before, .demo-seq[data-step="3"] .ub-task:nth-child(4) .ub-check::before,
+    .demo-seq[data-step="4"] .ub-task:nth-child(2) .ub-check::before, .demo-seq[data-step="4"] .ub-task:nth-child(3) .ub-check::before, .demo-seq[data-step="4"] .ub-task:nth-child(4) .ub-check::before {
+      content: "\2611"; color: var(--green); }
+    .demo-seq[data-step="1"] .ub-task:nth-child(2) .ub-txt,
+    .demo-seq[data-step="2"] .ub-task:nth-child(2) .ub-txt, .demo-seq[data-step="2"] .ub-task:nth-child(3) .ub-txt,
+    .demo-seq[data-step="3"] .ub-task:nth-child(2) .ub-txt, .demo-seq[data-step="3"] .ub-task:nth-child(3) .ub-txt, .demo-seq[data-step="3"] .ub-task:nth-child(4) .ub-txt,
+    .demo-seq[data-step="4"] .ub-task:nth-child(2) .ub-txt, .demo-seq[data-step="4"] .ub-task:nth-child(3) .ub-txt, .demo-seq[data-step="4"] .ub-task:nth-child(4) .ub-txt {
+      color: var(--text); }
+    .demo-seq[data-step="1"] .ub-task:nth-child(2) .ub-via,
+    .demo-seq[data-step="2"] .ub-task:nth-child(2) .ub-via, .demo-seq[data-step="2"] .ub-task:nth-child(3) .ub-via,
+    .demo-seq[data-step="3"] .ub-task:nth-child(2) .ub-via, .demo-seq[data-step="3"] .ub-task:nth-child(3) .ub-via, .demo-seq[data-step="3"] .ub-task:nth-child(4) .ub-via,
+    .demo-seq[data-step="4"] .ub-task:nth-child(2) .ub-via, .demo-seq[data-step="4"] .ub-task:nth-child(3) .ub-via, .demo-seq[data-step="4"] .ub-task:nth-child(4) .ub-via {
+      opacity: 1; transform: none; }
+  </style>
+
+  <div class="ub-wrap">
+    <div class="ub-phase">Phase 2 &middot; Checkout <span class="demo-pulse"></span><span style="flex:1"></span><span class="ub-status"></span></div>
+    <div class="ub-task"><span class="ub-check"></span><span class="ub-txt">Add payment-intent creation</span><span class="ub-via">abc123 Feat</span></div>
+    <div class="ub-task"><span class="ub-check"></span><span class="ub-txt">Handle 3-D Secure challenge</span><span class="ub-via">def456 Feat</span></div>
+    <div class="ub-task"><span class="ub-check"></span><span class="ub-txt">Add charge-flow tests</span><span class="ub-via">9c2a1b Test</span></div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# direnv: machine/user-specific env — never committed
+.envrc
+.direnv/
+
+# Local Claude Code project state (the committed plugin config lives in .claude-plugin/)
+.claude/
+
+# Secrets / local env (tokens are NEVER committed — supplied via environment variables)
+.env
+.env.*

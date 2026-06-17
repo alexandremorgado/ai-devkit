@@ -1,0 +1,37 @@
+<div class="demo-seq" data-steps="4" data-interval="1500">
+  <style>
+    .cl-wrap { display: grid; gap: 12px; }
+    .cl-head { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--text-secondary); font-family: var(--font); }
+    .cl-count { font-family: var(--mono); font-weight: 700; padding: 2px 9px; border-radius: 999px; background: var(--surface-3); color: var(--text-secondary); transition: color .4s, background .4s; }
+    .cl-count::after { content: "scanning\2026"; }
+    .demo-seq[data-step="1"] .cl-count { color: var(--red); background: color-mix(in srgb, var(--red) 13%, transparent); }
+    .demo-seq[data-step="1"] .cl-count::after { content: "4 issues"; }
+    .demo-seq[data-step="2"] .cl-count { color: var(--red); background: color-mix(in srgb, var(--red) 13%, transparent); }
+    .demo-seq[data-step="2"] .cl-count::after { content: "2 remaining"; }
+    .demo-seq[data-step="3"] .cl-count, .demo-seq[data-step="4"] .cl-count { color: var(--green); background: color-mix(in srgb, var(--green) 13%, transparent); }
+    .demo-seq[data-step="3"] .cl-count::after, .demo-seq[data-step="4"] .cl-count::after { content: "0 \2014 clean \2713"; }
+
+    .cl-code { background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; font-family: var(--mono); font-size: 12px; line-height: 1.55; overflow: hidden;
+               border-left: 3px solid var(--border); transition: border-left-color .5s; }
+    .demo-seq[data-step="4"] .cl-code { border-left-color: var(--green); }
+    .cl-line { color: var(--code-text); white-space: pre; padding: 1px 6px; border-radius: 4px; }
+    .cl-dim { color: var(--text-tertiary); }
+    .cl-noise { white-space: pre; padding: 1px 6px; border-radius: 4px; max-height: 1.7em; overflow: hidden; color: var(--code-text);
+                transition: background .35s, color .35s, max-height .5s ease, opacity .4s, padding .4s; }
+
+    /* flagged (red strike) while still present */
+    .demo-seq[data-step="1"] .cl-n1, .demo-seq[data-step="1"] .cl-n2, .demo-seq[data-step="1"] .cl-n3, .demo-seq[data-step="1"] .cl-n4,
+    .demo-seq[data-step="2"] .cl-n3, .demo-seq[data-step="2"] .cl-n4 {
+      background: color-mix(in srgb, var(--red) 15%, transparent); color: var(--red); text-decoration: line-through; }
+    /* removed (collapse): n1,n2 at step>=2 ; n3,n4 at step>=3 */
+    .demo-seq[data-step="2"] .cl-n1, .demo-seq[data-step="2"] .cl-n2,
+    .demo-seq[data-step="3"] .cl-n1, .demo-seq[data-step="3"] .cl-n2, .demo-seq[data-step="3"] .cl-n3, .demo-seq[data-step="3"] .cl-n4,
+    .demo-seq[data-step="4"] .cl-n1, .demo-seq[data-step="4"] .cl-n2, .demo-seq[data-step="4"] .cl-n3, .demo-seq[data-step="4"] .cl-n4 {
+      max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
+  </style>
+
+  <div class="cl-wrap">
+    <div class="cl-head"><span class="demo-pulse"></span> cleanup &mdash; uncommitted changes <span style="flex:1"></span><span class="cl-count"></span></div>
+    <div class="cl-code"><div class="cl-line">function charge(amount) {</div><div class="cl-noise cl-n1">  console.log("amount", amount)</div><div class="cl-noise cl-n2">  <span class="cl-dim">// old: legacy gateway path</span></div><div class="cl-line">  const fee = amount * 0.029</div><div class="cl-noise cl-n3">  <span class="cl-dim">// const legacyFee = amount * 0.05</span></div><div class="cl-line">  const total = amount + fee</div><div class="cl-noise cl-n4">  debugPrint("charged", total)</div><div class="cl-line">  return total</div><div class="cl-line">}</div></div>
+  </div>
+</div>

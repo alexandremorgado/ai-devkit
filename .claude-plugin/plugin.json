@@ -1,0 +1,8 @@
+{
+  "name": "ai-devkit",
+  "version": "0.1.0",
+  "description": "An open toolbox of reusable AI-coding-agent workflows (skills) — discoverable and adaptable across any stack.",
+  "author": { "name": "Alexandre Morgado" },
+  "homepage": "https://alexandremorgado.github.io/ai-devkit/",
+  "repository": "https://github.com/alexandremorgado/ai-devkit"
+}

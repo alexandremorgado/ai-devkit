@@ -1,0 +1,14 @@
+{
+  "name": "ai-devkit",
+  "owner": { "name": "Alexandre Morgado" },
+  "metadata": {
+    "description": "An open marketplace of reusable AI-coding-agent workflows. Add with /plugin marketplace add alexandremorgado/ai-devkit, then /plugin install ai-devkit@ai-devkit."
+  },
+  "plugins": [
+    {
+      "name": "ai-devkit",
+      "source": "./plugins/ai-devkit",
+      "description": "Reusable agent skills for the everyday dev loop — create-issue, issue-to-branch, smart-commit, ensure-tests, pr-partner, finish-branch and more. Discoverable in Claude Code and Codex; each skill ships an adapt-to-your-stack prompt."
+    }
+  ]
+}

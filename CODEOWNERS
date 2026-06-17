@@ -1,0 +1,3 @@
+# CODEOWNERS — default owner for the repo.
+# Enforcement also requires branch protection with "Require review from Code Owners".
+* @alexandremorgado

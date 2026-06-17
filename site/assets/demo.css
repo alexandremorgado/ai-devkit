@@ -1,0 +1,48 @@
+/* ai-devkit portal — shared chrome for skill demos. The animated visualizations themselves live in
+   each skill's demo.html (self-contained HTML + CSS, demo-prefixed classes, no JS). This file styles
+   only the surrounding section, the stage, and the Replay/Step controls, and silences motion for
+   reduced-motion users. Every color comes from theme.css custom properties, so demos invert correctly
+   between the dark and light themes. */
+
+.demo { margin: 30px 0 10px; }
+.demo-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.demo-title { font-size: 18px; font-weight: 600; margin: 0; color: var(--text); letter-spacing: -.2px; }
+.demo-controls { display: flex; gap: 8px; }
+.demo-replay, .demo-step {
+  cursor: pointer; font-family: var(--font); font-size: 12.5px; font-weight: 500;
+  padding: 6px 13px; border-radius: 999px; border: 1px solid var(--border-strong);
+  background: transparent; color: var(--text-secondary);
+  transition: color .15s, border-color .15s, background .15s;
+}
+.demo-replay:hover, .demo-step:hover { color: var(--text); border-color: var(--accent-text); }
+.demo-replay:active, .demo-step:active { background: var(--accent-soft); }
+
+.demo-stage {
+  position: relative; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 24px; min-height: 230px;
+}
+
+/* The sequence root each demo.html provides: <div class="demo-seq" data-steps="N"> … </div>.
+   demo.js sets data-step="0..N"; each demo renders its steps via transitions on its own elements. */
+.demo-seq { width: 100%; }
+
+/* A subtle "auto-playing" hint dot the demos can place via .demo-pulse. */
+.demo-pulse {
+  display: inline-block; width: 7px; height: 7px; border-radius: 999px;
+  background: var(--accent); animation: demoPulse 1.6s ease-in-out infinite;
+}
+@keyframes demoPulse { 0%, 100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.15); } }
+
+@media (prefers-reduced-motion: reduce) {
+  /* demo.js jumps straight to the final step; make sure nothing animates on the way there. */
+  .demo-stage *, .demo-pulse { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 640px) {
+  .demo-stage { padding: 16px; min-height: 200px; }
+  .demo-title { font-size: 16px; }
+}

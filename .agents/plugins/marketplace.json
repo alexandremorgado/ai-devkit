@@ -1,0 +1,19 @@
+{
+  "name": "ai-devkit",
+  "interface": {
+    "displayName": "ai-devkit"
+  },
+  "plugins": [
+    {
+      "name": "ai-devkit",
+      "source": {
+        "source": "local",
+        "path": "./plugins/ai-devkit"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

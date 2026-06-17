@@ -1,0 +1,83 @@
+<div class="demo-seq" data-steps="4" data-interval="1700">
+  <style>
+    .fb-wrap { display: grid; gap: 18px; font-family: var(--font); }
+
+    /* readiness card */
+    .fb-card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; background: var(--surface-2); }
+    .fb-row1 { display: flex; align-items: center; gap: 12px; font-size: 13px; margin-bottom: 12px; }
+    .fb-bar { flex: 1; height: 8px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+    .fb-fill { height: 100%; width: 6%; border-radius: 999px; background: var(--accent); transition: width .8s cubic-bezier(.4,0,.2,1); }
+    .demo-seq[data-step="1"] .fb-fill, .demo-seq[data-step="2"] .fb-fill,
+    .demo-seq[data-step="3"] .fb-fill, .demo-seq[data-step="4"] .fb-fill { width: 90%; }
+    .fb-pct { font-weight: 700; font-size: 12.5px; min-width: 3.4em; text-align: right; }
+    .fb-pct::after { content: "…"; }
+    .demo-seq[data-step="1"] .fb-pct::after, .demo-seq[data-step="2"] .fb-pct::after,
+    .demo-seq[data-step="3"] .fb-pct::after, .demo-seq[data-step="4"] .fb-pct::after { content: "90%"; }
+
+    .fb-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .fb-chip { font-size: 12px; padding: 4px 11px 4px 9px; border-radius: 999px; border: 1px solid var(--border-strong);
+               color: var(--text-secondary); background: var(--surface); display: inline-flex; align-items: center; gap: 6px; transition: color .4s, border-color .4s, background .4s; }
+    .fb-chip::before { content: "\2022"; color: var(--text-tertiary); font-weight: 700; transition: color .4s; }
+    .fb-ok { } /* Tests, Hygiene flip green at step 1 */
+    .demo-seq[data-step="1"] .fb-ok, .demo-seq[data-step="2"] .fb-ok, .demo-seq[data-step="3"] .fb-ok, .demo-seq[data-step="4"] .fb-ok {
+      color: var(--green); border-color: color-mix(in srgb, var(--green) 45%, transparent); background: color-mix(in srgb, var(--green) 10%, transparent); }
+    .demo-seq[data-step="1"] .fb-ok::before, .demo-seq[data-step="2"] .fb-ok::before, .demo-seq[data-step="3"] .fb-ok::before, .demo-seq[data-step="4"] .fb-ok::before { content: "\2713"; color: var(--green); }
+    /* Blockers: amber at step1, resolves green at step2 */
+    .demo-seq[data-step="1"] .fb-block { color: var(--accent-text); border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: var(--accent-soft); }
+    .demo-seq[data-step="1"] .fb-block::before { content: "\26A0"; color: var(--accent-text); }
+    .demo-seq[data-step="2"] .fb-block, .demo-seq[data-step="3"] .fb-block, .demo-seq[data-step="4"] .fb-block {
+      color: var(--green); border-color: color-mix(in srgb, var(--green) 45%, transparent); background: color-mix(in srgb, var(--green) 10%, transparent); }
+    .demo-seq[data-step="2"] .fb-block::before, .demo-seq[data-step="3"] .fb-block::before, .demo-seq[data-step="4"] .fb-block::before { content: "\2713"; color: var(--green); }
+
+    /* branch -> PR flow */
+    .fb-flow { display: flex; align-items: center; gap: 0; }
+    .fb-node { font-size: 12.5px; font-weight: 600; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface-2); white-space: nowrap; }
+    .fb-conn { flex: 1; height: 2px; background: var(--border-strong); transform: scaleX(0); transform-origin: left; transition: transform .7s ease; margin: 0 -1px; }
+    .demo-seq[data-step="3"] .fb-conn, .demo-seq[data-step="4"] .fb-conn { transform: scaleX(1); }
+    .fb-pr { opacity: .4; transition: opacity .5s, color .5s, border-color .5s, background .5s; }
+    .demo-seq[data-step="3"] .fb-pr, .demo-seq[data-step="4"] .fb-pr {
+      opacity: 1; color: var(--blue); border-color: color-mix(in srgb, var(--blue) 55%, transparent); background: color-mix(in srgb, var(--blue) 12%, transparent); }
+
+    /* archive */
+    .fb-archive { position: relative; display: flex; gap: 14px; align-items: stretch; min-height: 58px; }
+    .fb-folder { flex: 1; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 11.5px; color: var(--text-tertiary); transition: border-color .4s, background .4s, color .4s; }
+    .fb-folder b { display: block; color: var(--text-secondary); font-size: 11px; margin-bottom: 4px; letter-spacing: .3px; }
+    .demo-seq[data-step="4"] .fb-arch { border-color: color-mix(in srgb, var(--green) 55%, transparent); background: color-mix(in srgb, var(--green) 9%, transparent); color: var(--green); }
+    .fb-file { position: absolute; top: 30px; left: 10px; font-size: 11.5px; font-family: var(--mono);
+               padding: 4px 9px; border-radius: 5px; background: var(--accent-soft); color: var(--accent-text);
+               border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); transition: transform .9s cubic-bezier(.5,0,.2,1); }
+    .demo-seq[data-step="4"] .fb-file { transform: translateX(calc(100% + 8px)) translateY(-2px); }
+
+    .fb-cap { font-size: 11.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; min-height: 1.2em; }
+    .fb-cap::after { content: "scanning branch\2026"; }
+    .demo-seq[data-step="1"] .fb-cap::after { content: "plan 90% \2014 tests \2713 \2014 hygiene \2713"; }
+    .demo-seq[data-step="2"] .fb-cap::after { content: "blockers resolved \2014 ready for PR \1F3AF"; }
+    .demo-seq[data-step="3"] .fb-cap::after { content: "PR #128 opened against main"; }
+    .demo-seq[data-step="4"] .fb-cap::after { content: "branch plan archived \2192 Docs/archived/2026"; }
+  </style>
+
+  <div class="fb-wrap">
+    <div class="fb-card">
+      <div class="fb-row1"><b style="font-size:12px;letter-spacing:.3px">PLAN</b><div class="fb-bar"><div class="fb-fill"></div></div><span class="fb-pct"></span></div>
+      <div class="fb-chips">
+        <span class="fb-chip fb-ok">Tests</span>
+        <span class="fb-chip fb-ok">Hygiene</span>
+        <span class="fb-chip fb-block">Blockers</span>
+      </div>
+    </div>
+
+    <div class="fb-flow">
+      <span class="fb-node">feature/unlock-coins</span>
+      <span class="fb-conn"></span>
+      <span class="fb-node fb-pr">PR #128 &rsaquo; main</span>
+    </div>
+
+    <div class="fb-archive">
+      <div class="fb-folder"><b>Docs/branches</b>feature-unlock-coins.md</div>
+      <div class="fb-folder fb-arch"><b>Docs/archived/2026</b>&nbsp;</div>
+      <span class="fb-file">feature-unlock-coins.md</span>
+    </div>
+
+    <div class="fb-cap"><span class="demo-pulse"></span></div>
+  </div>
+</div>

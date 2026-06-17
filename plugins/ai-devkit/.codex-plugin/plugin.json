@@ -1,0 +1,39 @@
+{
+  "name": "ai-devkit",
+  "version": "0.1.0",
+  "description": "An open toolbox of reusable AI-coding-agent workflows (skills) and adaptation prompts for Codex.",
+  "author": {
+    "name": "Alexandre Morgado",
+    "url": "https://github.com/alexandremorgado"
+  },
+  "homepage": "https://alexandremorgado.github.io/ai-devkit/",
+  "repository": "https://github.com/alexandremorgado/ai-devkit",
+  "keywords": [
+    "ai-devkit",
+    "skills",
+    "claude-code",
+    "codex",
+    "developer-tools"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ai-devkit",
+    "shortDescription": "Reusable AI developer workflows",
+    "longDescription": "Install a toolbox of reusable AI-coding-agent workflows in Codex. The plugin ships the repo's skills — issue creation, branch planning, smart commits, test selection, PR review, branch finishing, cleanup, deep reasoning, and more. Each skill is designed to be adapted to your stack rather than copied blindly.",
+    "developerName": "Alexandre Morgado",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Shell (git, gh)"
+    ],
+    "websiteURL": "https://alexandremorgado.github.io/ai-devkit/",
+    "defaultPrompt": [
+      "Use ai-devkit to plan and finish this branch",
+      "Adapt an ai-devkit skill to this repo",
+      "Review this PR with pr-partner"
+    ],
+    "brandColor": "#E1C87C",
+    "screenshots": []
+  }
+}

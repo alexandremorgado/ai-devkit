@@ -1,0 +1,17 @@
+{
+  "_comment": "PUBLIC SITE ALLOWLIST. An asset is published ONLY if it is BOTH publish:public AND listed here under its \"<type>\": [\"<name>\", ...]. Defense-in-depth: a stray publish:public alone will NOT ship — `npm run build:public` (and CI) fail until the asset is added here. Everything in this repo is public; this mechanism lets a fork keep some assets off its own published site.",
+  "skill": [
+    "create-issue",
+    "issue-to-branch",
+    "create-branch",
+    "update-from-branch",
+    "smart-commit",
+    "ensure-tests",
+    "pr-partner",
+    "finish-branch",
+    "cleanup",
+    "update-branch-plan",
+    "deepthink",
+    "ultrafix"
+  ]
+}

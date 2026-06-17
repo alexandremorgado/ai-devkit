@@ -1,0 +1,58 @@
+<div class="demo-seq" data-steps="4" data-interval="1700">
+  <style>
+    .sc-wrap { font-family: var(--font); }
+    .sc-cap { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; margin-bottom: 14px; min-height: 1.2em; }
+    .sc-cap::after { content: "5 uncommitted files \2014 unsorted"; }
+    .demo-seq[data-step="1"] .sc-cap::after { content: "grouped by module"; }
+    .demo-seq[data-step="2"] .sc-cap::after { content: "semantic prefixes assigned"; }
+    .demo-seq[data-step="3"] .sc-cap::after { content: "3 atomic commit messages"; }
+    .demo-seq[data-step="4"] .sc-cap::after { content: "committed locally \2014 never auto-pushed"; }
+
+    .sc-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .sc-col { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; background: var(--surface-2); display: flex; flex-direction: column; gap: 7px; }
+    .sc-tag { font-size: 11px; font-weight: 700; letter-spacing: .3px; padding: 3px 9px; border-radius: 999px; align-self: flex-start; }
+    .sc-feat { color: var(--accent-text); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+    .sc-test { color: var(--blue); background: color-mix(in srgb, var(--blue) 12%, transparent); border: 1px solid color-mix(in srgb, var(--blue) 45%, transparent); }
+    .sc-docs { color: var(--green); background: color-mix(in srgb, var(--green) 11%, transparent); border: 1px solid color-mix(in srgb, var(--green) 45%, transparent); }
+
+    .sc-chip { font-family: var(--mono); font-size: 11px; padding: 4px 8px; border-radius: 5px;
+               background: var(--surface); border: 1px solid var(--border); color: var(--text);
+               transform: translateY(-64px) scale(.92); opacity: 0;
+               transition: transform .6s cubic-bezier(.3,1.25,.5,1), opacity .45s ease; }
+    .demo-seq[data-step="1"] .sc-chip, .demo-seq[data-step="2"] .sc-chip,
+    .demo-seq[data-step="3"] .sc-chip, .demo-seq[data-step="4"] .sc-chip { transform: none; opacity: 1; }
+    .sc-chip:nth-child(3) { transition-delay: .06s; }
+    .sc-chip:nth-child(4) { transition-delay: .12s; }
+
+    .sc-msg { font-family: var(--mono); font-size: 11px; color: var(--text); white-space: nowrap; overflow: hidden;
+              max-width: 0; opacity: .25; border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 2px;
+              transition: max-width .7s steps(34, end), opacity .35s ease; }
+    .demo-seq[data-step="3"] .sc-msg, .demo-seq[data-step="4"] .sc-msg { max-width: 28ch; opacity: 1; }
+
+    .sc-sum { margin-top: 14px; font-size: 12px; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(4px); transition: opacity .4s, transform .4s; }
+    .demo-seq[data-step="4"] .sc-sum { opacity: 1; transform: none; }
+  </style>
+
+  <div class="sc-wrap">
+    <div class="sc-cap"><span class="demo-pulse"></span></div>
+    <div class="sc-cols">
+      <div class="sc-col">
+        <span class="sc-tag sc-feat">Feat</span>
+        <span class="sc-chip">auth/login.ts</span>
+        <span class="sc-chip">auth/session.ts</span>
+        <span class="sc-msg">Feat: Update auth module</span>
+      </div>
+      <div class="sc-col">
+        <span class="sc-tag sc-test">Test</span>
+        <span class="sc-chip">auth/login.test.ts</span>
+        <span class="sc-msg">Test: Add login coverage</span>
+      </div>
+      <div class="sc-col">
+        <span class="sc-tag sc-docs">Docs</span>
+        <span class="sc-chip">README.md</span>
+        <span class="sc-msg">Docs: Update README</span>
+      </div>
+    </div>
+    <div class="sc-sum">&#10003; 3 commits created &middot; local only</div>
+  </div>
+</div>

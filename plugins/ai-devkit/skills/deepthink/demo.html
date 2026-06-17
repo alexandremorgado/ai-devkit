@@ -1,0 +1,62 @@
+<div class="demo-seq" data-steps="6" data-interval="1150">
+  <style>
+    .dt-flow { position: relative; padding-left: 8px; }
+    .dt-spine { position: absolute; left: 19px; top: 14px; width: 2px; height: 0; background: var(--accent);
+                transition: height .55s ease; border-radius: 2px; }
+    .demo-seq[data-step="1"] .dt-spine { height: 14%; }
+    .demo-seq[data-step="2"] .dt-spine { height: 31%; }
+    .demo-seq[data-step="3"] .dt-spine { height: 48%; }
+    .demo-seq[data-step="4"] .dt-spine { height: 65%; }
+    .demo-seq[data-step="5"] .dt-spine { height: 82%; }
+    .demo-seq[data-step="6"] .dt-spine { height: 100%; }
+
+    .dt-node { position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 7px 0; }
+    .dt-badge { flex: none; width: 24px; height: 24px; border-radius: 999px; display: grid; place-items: center;
+                font-size: 12px; font-weight: 700; font-family: var(--mono); z-index: 1;
+                background: var(--surface-3); color: var(--text-tertiary);
+                border: 1px solid var(--border-strong); transition: background .4s, color .4s, border-color .4s, box-shadow .4s; }
+    .dt-body { padding-top: 1px; }
+    .dt-name { font-size: 13.5px; font-weight: 600; color: var(--text-secondary); transition: color .4s; }
+    .dt-hint { font-size: 11.5px; color: var(--text-tertiary); transition: color .4s; }
+
+    /* cumulative lighting: at step k, nodes 1..k are lit */
+    .demo-seq[data-step="1"] .dt-node:nth-child(-n+1) .dt-badge,
+    .demo-seq[data-step="2"] .dt-node:nth-child(-n+2) .dt-badge,
+    .demo-seq[data-step="3"] .dt-node:nth-child(-n+3) .dt-badge,
+    .demo-seq[data-step="4"] .dt-node:nth-child(-n+4) .dt-badge,
+    .demo-seq[data-step="5"] .dt-node:nth-child(-n+5) .dt-badge,
+    .demo-seq[data-step="6"] .dt-node:nth-child(-n+6) .dt-badge {
+      background: var(--accent); color: #1a1500; border-color: var(--accent); }
+    .demo-seq[data-step="1"] .dt-node:nth-child(-n+1) .dt-name,
+    .demo-seq[data-step="2"] .dt-node:nth-child(-n+2) .dt-name,
+    .demo-seq[data-step="3"] .dt-node:nth-child(-n+3) .dt-name,
+    .demo-seq[data-step="4"] .dt-node:nth-child(-n+4) .dt-name,
+    .demo-seq[data-step="5"] .dt-node:nth-child(-n+5) .dt-name,
+    .demo-seq[data-step="6"] .dt-node:nth-child(-n+6) .dt-name { color: var(--text); }
+    .demo-seq[data-step="1"] .dt-node:nth-child(-n+1) .dt-hint,
+    .demo-seq[data-step="2"] .dt-node:nth-child(-n+2) .dt-hint,
+    .demo-seq[data-step="3"] .dt-node:nth-child(-n+3) .dt-hint,
+    .demo-seq[data-step="4"] .dt-node:nth-child(-n+4) .dt-hint,
+    .demo-seq[data-step="5"] .dt-node:nth-child(-n+5) .dt-hint,
+    .demo-seq[data-step="6"] .dt-node:nth-child(-n+6) .dt-hint { color: var(--text-secondary); }
+
+    /* pulse-glow on the node that just lit up (the frontier) */
+    .demo-seq[data-step="1"] .dt-node:nth-child(1) .dt-badge,
+    .demo-seq[data-step="2"] .dt-node:nth-child(2) .dt-badge,
+    .demo-seq[data-step="3"] .dt-node:nth-child(3) .dt-badge,
+    .demo-seq[data-step="4"] .dt-node:nth-child(4) .dt-badge,
+    .demo-seq[data-step="5"] .dt-node:nth-child(5) .dt-badge,
+    .demo-seq[data-step="6"] .dt-node:nth-child(6) .dt-badge {
+      box-shadow: 0 0 0 5px var(--accent-soft); }
+  </style>
+
+  <div class="dt-flow">
+    <div class="dt-spine"></div>
+    <div class="dt-node"><span class="dt-badge">1</span><span class="dt-body"><span class="dt-name">Decompose</span><div class="dt-hint">break the problem into components &amp; constraints</div></span></div>
+    <div class="dt-node"><span class="dt-badge">2</span><span class="dt-body"><span class="dt-name">Explore</span><div class="dt-hint">weigh multiple approaches &amp; trade-offs</div></span></div>
+    <div class="dt-node"><span class="dt-badge">3</span><span class="dt-body"><span class="dt-name">Analyze</span><div class="dt-hint">edge cases, failure modes, performance</div></span></div>
+    <div class="dt-node"><span class="dt-badge">4</span><span class="dt-body"><span class="dt-name">Design</span><div class="dt-hint">apply the patterns already in the codebase</div></span></div>
+    <div class="dt-node"><span class="dt-badge">5</span><span class="dt-body"><span class="dt-name">Risk</span><div class="dt-hint">blast radius, compatibility, mitigations</div></span></div>
+    <div class="dt-node"><span class="dt-badge">6</span><span class="dt-body"><span class="dt-name">Strategy</span><div class="dt-hint">phased, testable implementation plan</div></span></div>
+  </div>
+</div>

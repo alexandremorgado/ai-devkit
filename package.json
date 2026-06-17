@@ -1,0 +1,18 @@
+{
+  "name": "ai-devkit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "An open toolbox of reusable AI-coding-agent workflows (skills) for Claude Code and Codex, plus a static portal generated from them.",
+  "homepage": "https://alexandremorgado.github.io/ai-devkit/",
+  "repository": { "type": "git", "url": "https://github.com/alexandremorgado/ai-devkit" },
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node site/build.mjs",
+    "build:public": "node site/build.mjs --public",
+    "test": "node site/build.mjs --public && npm run test:plugin",
+    "test:plugin": "node scripts/validate-codex-plugin.mjs",
+    "sync:plugin": "node scripts/sync-codex-plugin.mjs"
+  }
+}
