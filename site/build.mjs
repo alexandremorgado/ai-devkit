@@ -13,6 +13,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const DIST = join(ROOT, 'dist');
 const PUBLIC = process.argv.includes('--public');
+const SITE = 'https://alexandremorgado.github.io/ai-devkit';
 
 const TYPES = [
   { dir: 'skills', type: 'skill', out: 'skills', label: 'Skills' },
@@ -54,10 +55,15 @@ const DEMO_FORBIDDEN = [
   [/@import/i, 'CSS @import'],
   [/url\s*\(/i, 'CSS url()'],
   [/https?:\/\//i, 'external http(s) URL'],
+  [/<(animate|animatemotion|animatetransform|set)[\s>]/i, 'SVG animation element'],
+  [/expression\s*\(/i, 'CSS expression()'],
 ];
 function validateDemo(html, demoPath) {
+  // Also test a backslash-stripped copy so CSS-escape obfuscation (e.g. `u\72l(` -> `url(`) can't slip a
+  // forbidden token past the literal regexes. This only ADDS detection; plain markup is unaffected.
+  const unescaped = html.replace(/\\/g, '');
   for (const [re, label] of DEMO_FORBIDDEN) {
-    if (re.test(html)) {
+    if (re.test(html) || re.test(unescaped)) {
       throw new Error(
         `Invalid demo ${demoPath}: contains forbidden ${label}. ` +
         `Demos must be self-contained HTML + CSS only — no scripts, inline handlers, network, media, or url()/@import. ` +
@@ -143,7 +149,7 @@ function mdToHtml(md) {
       const rows = []; while (i < lines.length && /^\|.*\|/.test(lines[i])) { rows.push(lines[i]); i++; }
       const cells = (r) => r.replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
       const head = cells(rows[0]); const bodyRows = rows.slice(2).map(cells);
-      html += `<table><thead><tr>${head.map((h) => `<th>${inline(h)}</th>`).join('')}</tr></thead><tbody>${bodyRows.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+      html += `<div class="table-wrap"><table><thead><tr>${head.map((h) => `<th>${inline(h)}</th>`).join('')}</tr></thead><tbody>${bodyRows.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
       continue;
     }
     const h = line.match(/^(#{1,4})\s+(.*)$/);
@@ -383,7 +389,10 @@ function terminalHtml(s) {
     if (l[0] === 'txt') return `<span class="t-line" data-delay="480"><span class="t-dim">&nbsp;&nbsp;${l[1]}</span></span>`;
     return `<span class="t-line" data-delay="500"><span class="t-dim">&#9210; ${l[1]}</span></span>`;
   }).join('');
-  return `<div class="terminal" data-terminal role="img" aria-label="Example terminal session: ${escAttr(s.about)}">
+  // Surface the session's final result in the image label so screen-reader users get the outcome,
+  // not just the setup. okLine strips any inline HTML (e.g. <span class="t-gold">) from the 'ok' line.
+  const okLine = (s.lines.find((l) => l[0] === 'ok') || [null, ''])[1].replace(/<[^>]+>/g, '');
+  return `<div class="terminal" data-terminal role="img" aria-label="Example terminal session: ${escAttr(s.about)}${okLine ? '. Result: ' + escAttr(okLine) : ''}">
 <div class="t-bar"><span class="t-dot r"></span><span class="t-dot y"></span><span class="t-dot g"></span><span class="t-title">${esc(s.title)}</span><button class="t-replay" type="button" aria-label="Replay the session">&#8635; replay</button></div>
 <pre class="t-body" aria-hidden="true">${rows}</pre></div>`;
 }
@@ -424,23 +433,39 @@ function resolveMarkersMd(md) {
 }
 
 // ---------- templates ----------
-function layout({ title, active, depth, body }) {
+function layout({ title, active, depth, body, description, path }) {
   const base = depth ? '../' : './';
+  const desc = description || 'Open, battle-tested AI-coding-agent workflows for Claude Code and Codex — install once, use in every repo.';
+  const canonical = path != null ? SITE + '/' + path : SITE + '/';
+  const ogTitle = `${title} · ai-devkit`;
   const nav = [['getting-started', 'Start here'], ['catalog', 'Catalog'], ['contribute', 'Contribute']]
     .map(([h, l]) => `<a class="link${active === h ? ' active' : ''}" href="${base}${h}.html">${l}</a>`).join('');
   return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)} · ai-devkit</title>
+<meta name="description" content="${escAttr(desc)}">
+<link rel="canonical" href="${escAttr(canonical)}">
+<link rel="icon" href="${base}assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#faf8f2" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ai-devkit">
+<meta property="og:title" content="${escAttr(ogTitle)}">
+<meta property="og:description" content="${escAttr(desc)}">
+<meta property="og:url" content="${escAttr(canonical)}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="${escAttr(ogTitle)}">
+<meta name="twitter:description" content="${escAttr(desc)}">
 <link rel="stylesheet" href="${base}assets/theme.css">
 <link rel="stylesheet" href="${base}assets/demo.css">
-<script>(function(){try{var p=new URLSearchParams(location.search).get('theme');var t=p||localStorage.getItem('aidevkit-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}document.documentElement.setAttribute('data-js','1');})();</script>
+<script>(function(){try{var p=new URLSearchParams(location.search).get('theme');var t=p||localStorage.getItem('aidevkit-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}document.documentElement.setAttribute('data-js','1');document.addEventListener('DOMContentLoaded',function(){var b=document.querySelector('.theme-toggle');if(b)b.setAttribute('aria-pressed',String(document.documentElement.getAttribute('data-theme')==='light'));});})();</script>
 <script defer src="${base}assets/demo.js"></script>
 <script defer src="${base}assets/terminal.js"></script></head>
-<body><nav class="nav"><div class="container nav-inner">
+<body><a class="skip" href="#main">Skip to content</a><nav class="nav"><div class="container nav-inner">
 <a class="brand" href="${base}index.html">ai<span class="dot">·</span>devkit</a>${nav}<span class="spacer"></span>
-<button class="theme-toggle" onclick="(function(){var d=document.documentElement;var t=d.getAttribute('data-theme')==='light'?'dark':'light';d.setAttribute('data-theme',t);try{localStorage.setItem('aidevkit-theme',t)}catch(e){}})()" aria-label="Toggle light/dark theme" title="Toggle light/dark">&#9680;</button>
+<button class="theme-toggle" type="button" aria-pressed="false" onclick="(function(el){var d=document.documentElement;var t=d.getAttribute('data-theme')==='light'?'dark':'light';d.setAttribute('data-theme',t);try{localStorage.setItem('aidevkit-theme',t)}catch(e){}el.setAttribute('aria-pressed',String(t==='light'))})(this)" aria-label="Toggle light/dark theme" title="Toggle light/dark"><span aria-hidden="true">&#9680;</span></button>
 <a class="link" href="https://github.com/alexandremorgado/ai-devkit" style="font-size:13px">GitHub</a>
-</div></nav>${body}
+</div></nav><main id="main">${body}</main>
 <footer><div class="container">ai-devkit · open AI-coding-agent workflows · generated from source${PUBLIC ? '' : ' · internal build'}</div></footer>
 </body></html>`;
 }
@@ -468,7 +493,7 @@ function usageBlock(a) {
     ? 'This skill only runs when you ask for it by name — the agent never starts it on its own.'
     : 'You can also just describe the task in plain words — the agent picks the skill up by itself.';
   const term = SESSIONS[a.slug] ? `<p class="hint" style="margin-top:14px">What a run looks like:</p>${terminalHtml(SESSIONS[a.slug])}` : '';
-  return `<div class="usage"><h3>How to use it</h3>
+  return `<div class="usage"><h2>How to use it</h2>
 <p>Comes with the <strong>ai-devkit</strong> plugin (<a href="../getting-started.html">install — two commands</a>). Once installed, type this in any repo:</p>
 <span class="you-type">${esc(invocation)}</span>
 <p class="hint">${auto} That&rsquo;s the Claude Code form — in Codex, type <code>$${esc(a.name)}</code> instead, or just name the skill in plain words.</p>
@@ -481,7 +506,7 @@ function detailPage(a) {
   const promptBlock = showPrompt ? `<div class="adapt"><h3>Adapt to your platform</h3>
 <p class="hint">${a.portability === 'platform-specific' ? 'Reference pattern — study, don’t port.' : 'Copy this prompt into Claude or Codex, fill in your stack, and it will generate an adapted version for your project.'}</p>
 <pre id="prompt">${esc(adaptationPrompt(a))}</pre>
-<button class="btn" onclick="copyPrompt()">Copy prompt</button></div>
+<button class="btn" type="button" onclick="copyPrompt()">Copy prompt</button></div>
 <script>function copyPrompt(){const t=document.getElementById('prompt').innerText;navigator.clipboard.writeText(t).then(()=>{const b=document.querySelector('.adapt .btn');b.textContent='Copied';b.classList.add('copied');setTimeout(()=>{b.textContent='Copy prompt';b.classList.remove('copied')},1500)})}</script>` : '';
   // Animated demo. a.demoHtml is the ONLY raw-injected value on the page (validated in collectAssets).
   // promptBlock and mdToHtml(a.body) keep their escaping; adaptationPrompt() reads only a.body, so demo
@@ -499,7 +524,8 @@ function detailPage(a) {
   // executed by the AGENT, not the reader — so both collapse into <details>. Other types (tutorials,
   // cases) are meant to be read and stay expanded.
   const isRunnable = a.type === 'skill' || a.type === 'tool';
-  const bodyHtml = resolveMarkers(mdToHtml(bodyMd));
+  // Demote any surviving body H1 so the detail header keeps the page's only h1.
+  const bodyHtml = resolveMarkers(mdToHtml(bodyMd)).replace(/<(\/?)h1>/g, '<$1h2>');
   const playbook = isRunnable
     ? `<details class="fold"><summary>Under the hood — the playbook the agent follows <span class="fold-sub">nothing in here is for you to run</span></summary><div class="fold-body"><p class="hint">Everything in this section is read and executed by the <em>agent</em> when you invoke the skill. It&rsquo;s published so you can audit it, learn from it, or adapt it — not because you need to follow it yourself.</p>${bodyHtml}</div></details>`
     : bodyHtml;
@@ -511,7 +537,7 @@ function detailPage(a) {
 <h1>${esc(title)}</h1><p class="muted">${esc(a.summary || a.description || '')}</p>
 <div class="meta-row">${badges(a)}</div></div></header>
 <div class="container content">${markdownCopyBlock(resolveMarkersMd(a.body))}${usageBlock(a)}${demoBlock}${playbook}${adapt}</div>`;
-  return layout({ title, active: 'catalog', depth: 1, body });
+  return layout({ title, active: 'catalog', depth: 1, body, description: a.summary || a.description, path: `${a.outDir}/${a.slug}.html` });
 }
 
 function homePage(assets) {
@@ -583,14 +609,14 @@ npm install -g @openai/codex</pre><p><a href="./getting-started.html">Which one?
 
 <section class="container"><h2>Built something other teams could use?</h2>
 <p class="muted" style="max-width:780px">A skill is just a markdown file — if your team has a workflow worth sharing, contributing it takes one PR. <a href="./contribute.html">How to contribute &rarr;</a></p></section>`;
-  return layout({ title: 'Home', active: '', depth: 0, body });
+  return layout({ title: 'Home', active: '', depth: 0, body, description: 'ai-devkit is a toolbox you install into an AI coding agent — Claude Code or Codex. One install teaches the agent a battle-tested daily loop: turn a sentence into a GitHub issue, an issue into a planned branch, messy changes into clean commits, and a finished branch into a PR.', path: '' });
 }
 
 function catalogPage(assets) {
   const cards = assets.map(card).join('');
   const filterRow = (label, key, vals) => `<div class="filters"><span class="label">${label}</span>
-<button class="chip active" data-key="${key}" data-val="">all</button>
-${vals.map((v) => `<button class="chip" data-key="${key}" data-val="${escAttr(v)}">${esc(v)}</button>`).join('')}</div>`;
+<button class="chip active" data-key="${key}" data-val="" aria-pressed="true">all</button>
+${vals.map((v) => `<button class="chip" data-key="${key}" data-val="${escAttr(v)}" aria-pressed="false">${esc(v)}</button>`).join('')}</div>`;
   const uniq = (k) => [...new Set(assets.map((a) => a[k]).filter(Boolean))];
   const body = `<header class="hero" style="padding:56px 0 28px"><div class="container"><div class="kicker">Catalog</div><h1 style="font-size:36px">Everything shared, in one place</h1><p class="muted" style="max-width:780px"><strong>Skills</strong> are playbooks your agent follows (run one with <code>/the-name</code> in Claude Code, <code>$the-name</code> in Codex), <strong>tools</strong> are runnable scripts, and <strong>tutorials</strong> are guides. Click anything for what it does, how to use it, and a prompt to adapt it to your stack.</p>
 <div class="legend">
@@ -602,13 +628,16 @@ ${vals.map((v) => `<button class="chip" data-key="${key}" data-val="${escAttr(v)
 ${filterRow('Type', 'type', uniq('type'))}
 ${filterRow('Portability', 'portability', uniq('portability'))}
 ${filterRow('Platform', 'platform', uniq('platform'))}
-<div class="grid" id="grid">${cards}</div></section>
+<div class="grid" id="grid">${cards}</div>
+<p class="empty" id="grid-empty" hidden>No matches — <button class="btn ghost" type="button" id="grid-reset">clear filters</button></p></section>
 <script>
 const f={type:'',portability:'',platform:''};
-document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const k=c.dataset.key;f[k]=c.dataset.val;document.querySelectorAll('.chip[data-key="'+k+'"]').forEach(x=>x.classList.toggle('active',x===c));apply()});
-function apply(){document.querySelectorAll('#grid .card').forEach(card=>{const ok=(!f.type||card.dataset.type===f.type)&&(!f.portability||card.dataset.portability===f.portability)&&(!f.platform||card.dataset.platform===f.platform);card.style.display=ok?'':'none'})}
+function setChip(k,val){f[k]=val;document.querySelectorAll('.chip[data-key="'+k+'"]').forEach(x=>{const on=x.dataset.val===val;x.classList.toggle('active',on);x.setAttribute('aria-pressed',String(on))})}
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{setChip(c.dataset.key,c.dataset.val);apply()});
+function apply(){let shown=0;document.querySelectorAll('#grid .card').forEach(card=>{const ok=(!f.type||card.dataset.type===f.type)&&(!f.portability||card.dataset.portability===f.portability)&&(!f.platform||card.dataset.platform===f.platform);card.style.display=ok?'':'none';if(ok)shown++});const e=document.getElementById('grid-empty');if(e)e.hidden=shown>0}
+var reset=document.getElementById('grid-reset');if(reset)reset.onclick=()=>{setChip('type','');setChip('portability','');setChip('platform','');apply()};
 </script>`;
-  return layout({ title: 'Catalog', active: 'catalog', depth: 0, body });
+  return layout({ title: 'Catalog', active: 'catalog', depth: 0, body, description: 'Browse every ai-devkit skill — what it does, a copy-paste example, and a prompt to adapt it to your stack.', path: 'catalog.html' });
 }
 
 // "Copy as Markdown" — embeds the page's raw markdown in a hidden textarea so a developer can copy
@@ -639,8 +668,18 @@ function installedListMd(allAssets) {
     .join('\n');
 }
 
-function staticPage(title, active, inner, rawMd) {
-  return layout({ title, active, depth: 0, body: `<header class="hero" style="padding:56px 0 28px"><div class="container"><h1 style="font-size:36px">${esc(title)}</h1></div></header><section class="container content">${markdownCopyBlock(rawMd)}${inner}</section>` });
+function staticPage(title, active, inner, rawMd, path, description) {
+  // Derive a description from the first ~150 chars of the raw markdown (markers/markup stripped) when
+  // the caller doesn't supply one, so each static page still gets a meaningful meta description.
+  const derived = (rawMd || '')
+    .replace(/\{\{[^}]*\}\}/g, ' ')          // drop {{TERMINAL:…}} / {{DETAILS:…}} markers
+    .replace(/[#>*`_\-|]/g, ' ')             // strip common markdown punctuation
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1') // links -> their text
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 150);
+  const desc = description || derived || undefined;
+  return layout({ title, active, depth: 0, description: desc, path, body: `<header class="hero" style="padding:56px 0 28px"><div class="container"><h1 style="font-size:36px">${esc(title)}</h1></div></header><section class="container content">${markdownCopyBlock(rawMd)}${inner}</section>` });
 }
 
 // ---------- build ----------
@@ -677,13 +716,30 @@ function build() {
   // the copyable version.
   const gsMd = (readDoc('getting-started') || defaultGettingStarted()).replace('{{INSTALLED_SKILLS}}', installedListMd(allAssets));
   const coMd = readDoc('contribute') || defaultContribute();
-  writeFileSync(join(DIST, 'getting-started.html'), staticPage('Start here', 'getting-started', resolveMarkers(mdToHtml(gsMd)), resolveMarkersMd(gsMd)));
-  writeFileSync(join(DIST, 'contribute.html'), staticPage('Contribute', 'contribute', resolveMarkers(mdToHtml(coMd)), resolveMarkersMd(coMd)));
+  writeFileSync(join(DIST, 'getting-started.html'), staticPage('Start here', 'getting-started', resolveMarkers(mdToHtml(gsMd)), resolveMarkersMd(gsMd), 'getting-started.html'));
+  writeFileSync(join(DIST, 'contribute.html'), staticPage('Contribute', 'contribute', resolveMarkers(mdToHtml(coMd)), resolveMarkersMd(coMd), 'contribute.html'));
 
   for (const a of assets) {
     mkdirSync(join(DIST, a.outDir), { recursive: true });
     writeFileSync(join(DIST, a.outDir, `${a.slug}.html`), detailPage(a));
   }
+
+  // GitHub Pages serves the output as-is (no Jekyll processing). robots + sitemap use ABSOLUTE URLs
+  // (the only place absolute URLs belong); on-page links/assets stay relative for the project subpath.
+  writeFileSync(join(DIST, '.nojekyll'), '');
+  writeFileSync(join(DIST, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
+  const sitemapUrls = [
+    `${SITE}/`,
+    `${SITE}/catalog.html`,
+    `${SITE}/getting-started.html`,
+    `${SITE}/contribute.html`,
+    ...assets.map((a) => `${SITE}/${a.outDir}/${a.slug}.html`),
+  ];
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    sitemapUrls.map((u) => `  <url><loc>${esc(u)}</loc></url>`).join('\n') +
+    `\n</urlset>\n`;
+  writeFileSync(join(DIST, 'sitemap.xml'), sitemap);
+
   console.log(`Built ${assets.length} asset pages -> dist/ (${PUBLIC ? 'public' : 'internal'} build). Excluded private: ${PUBLIC}`);
 }
 

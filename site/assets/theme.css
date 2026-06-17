@@ -22,7 +22,7 @@
   --code-inline: #f0e2bc;
   --code-inline-bg: var(--surface-2);
   --green: #86e70b;
-  --red: #dc5024;
+  --red: #ef6a42;
   --blue: #5b8def;
   /* constant across themes — code blocks stay dark (readable on both) */
   --code-bg: #0d0d0d;
@@ -42,7 +42,7 @@
   --surface-3: #e9e2d2;
   --text: #1a1712;
   --text-secondary: rgba(26, 23, 18, 0.62);
-  --text-tertiary: rgba(26, 23, 18, 0.42);
+  --text-tertiary: rgba(26, 23, 18, 0.55);
   --accent: #e1c87c;            /* keep brand gold as fill */
   --accent-strong: #cba55b;
   --accent-soft: rgba(184, 144, 47, 0.14);
@@ -50,10 +50,10 @@
   --border: #e6ddc9;
   --border-strong: #d4c9ab;
   --nav-bg: rgba(250, 248, 242, 0.85);
-  --hero-from: #caa23c; --hero-via: #b8902f; --hero-to: #8a6d1f;
+  --hero-from: #9c7a26; --hero-via: #8a6d1f; --hero-to: #6f561a;
   --code-inline: #6b531a;
   --code-inline-bg: #efe7d4;
-  --green: #4e9106;
+  --green: #3f7a04;
   --red: #c2451d;
 }
 
@@ -71,6 +71,15 @@ body {
 }
 a { color: var(--accent-text); text-decoration: none; }
 a:hover { text-decoration: underline; }
+
+/* Visible keyboard focus (M4) */
+:where(a,button,summary,.card,.flow-node,.chip,.theme-toggle):focus-visible{outline:2px solid var(--accent-text);outline-offset:2px;border-radius:var(--radius-sm);}
+.card:focus-visible,a.flow-node:focus-visible{border-color:var(--accent);}
+details.fold>summary:focus-visible{outline-offset:-2px;}
+
+/* Skip link + main landmark */
+.skip{position:absolute;left:-9999px;}
+.skip:focus{position:fixed;left:12px;top:12px;z-index:30;background:var(--accent);color:#1a1500;padding:8px 14px;border-radius:var(--radius-sm);}
 
 .container { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
 
@@ -98,9 +107,11 @@ a:hover { text-decoration: underline; }
 .hero { padding: 72px 0 40px; border-bottom: 1px solid var(--border); }
 .hero h1 {
   font-size: 44px; line-height: 1.1; margin: 0 0 16px; font-weight: 600; letter-spacing: -0.5px;
+  color: var(--hero-to); /* fallback if background-clip:text is unsupported */
   background: linear-gradient(120deg, var(--hero-from), var(--hero-via) 45%, var(--hero-to));
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
+@media (forced-colors: active) { .hero h1 { -webkit-text-fill-color: revert; background: none; } }
 .hero p { font-size: 18px; color: var(--text-secondary); max-width: 720px; margin: 0 0 12px; }
 .kicker { color: var(--accent-text); font-size: 13px; letter-spacing: 1.6px; text-transform: uppercase; margin-bottom: 14px; }
 
@@ -178,10 +189,10 @@ th { background: var(--surface-2); }
   padding: 9px 16px; transition: background .15s;
 }
 .btn:hover { background: var(--accent-strong); }
-.btn.copied { background: var(--green); color: #fff; }
+.btn.copied { background: var(--green); color: #10220a; }
 .btn.ghost { background: transparent; border: 1px solid var(--border-strong); color: var(--text-secondary); }
 .btn.ghost:hover { background: var(--surface-2); color: var(--text); border-color: var(--accent-text); }
-.btn.ghost.copied { background: var(--green); color: #fff; border-color: var(--green); }
+.btn.ghost.copied { background: var(--green); color: #10220a; border-color: var(--green); }
 .md-copy { display: flex; justify-content: flex-end; margin: 0 0 18px; }
 
 /* Footer */
@@ -289,6 +300,7 @@ a.flow-node:hover { border-color: var(--accent); transform: translateY(-2px); ba
   border-radius: var(--radius); padding: 18px 20px; margin: 24px 0;
 }
 .usage h3 { margin: 0 0 8px; color: var(--accent-text); }
+.usage h2 { margin: 0 0 8px; color: var(--accent-text); font-size: 18px; font-weight: 600; }
 .usage p { margin: 0 0 10px; font-size: 14px; }
 .usage .hint { color: var(--text-secondary); font-size: 13px; margin: 12px 0 0; }
 
@@ -304,4 +316,21 @@ a.flow-node:hover { border-color: var(--accent); transform: translateY(-2px); ba
   .nav-inner { gap: 16px; overflow-x: auto; }
   .flow { flex-direction: column; }
   .flow-arrow { transform: rotate(90deg); align-self: flex-start; margin-left: 24px; }
+}
+
+/* Responsive table wrapper + catalog empty state (S4/S5) */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 16px 0; }
+.table-wrap > table { margin: 0; }
+.empty { color: var(--text-secondary); padding: 24px 0; }
+
+/* Respect reduced-motion (O3) */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Larger touch targets on coarse pointers (S5) */
+@media (max-width: 640px) and (pointer: coarse) {
+  .theme-toggle { width: 40px; height: 40px; }
+  .chip, .demo-replay, .demo-step { padding: 9px 15px; }
 }
