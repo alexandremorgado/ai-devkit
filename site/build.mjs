@@ -8,12 +8,19 @@
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const DIST = join(ROOT, 'dist');
 const PUBLIC = process.argv.includes('--public');
 const SITE = 'https://alexandremorgado.github.io/ai-devkit';
+
+// Cache-busting: a short content hash per asset, appended as ?v=… so updated CSS/JS reaches returning
+// visitors immediately (no hard refresh) while unchanged assets stay cached. Hashed once at startup.
+const ASSET_DIR = join(HERE, 'assets');
+const assetVer = (name) => { try { return createHash('sha256').update(readFileSync(join(ASSET_DIR, name))).digest('hex').slice(0, 8); } catch { return ''; } };
+const asset = (base, name) => { const v = assetVer(name); return `${base}assets/${name}${v ? `?v=${v}` : ''}`; };
 
 const TYPES = [
   { dir: 'skills', type: 'skill', out: 'skills', label: 'Skills' },
@@ -470,7 +477,7 @@ function layout({ title, active, depth, body, description, path }) {
 <title>${esc(title)} · ai-devkit</title>
 <meta name="description" content="${escAttr(desc)}">
 <link rel="canonical" href="${escAttr(canonical)}">
-<link rel="icon" href="${base}assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="${asset(base, 'favicon.svg')}" type="image/svg+xml">
 <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#faf8f2" media="(prefers-color-scheme: light)">
 <meta property="og:type" content="website">
@@ -481,11 +488,11 @@ function layout({ title, active, depth, body, description, path }) {
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${escAttr(ogTitle)}">
 <meta name="twitter:description" content="${escAttr(desc)}">
-<link rel="stylesheet" href="${base}assets/theme.css">
-<link rel="stylesheet" href="${base}assets/demo.css">
+<link rel="stylesheet" href="${asset(base, 'theme.css')}">
+<link rel="stylesheet" href="${asset(base, 'demo.css')}">
 <script>(function(){try{var p=new URLSearchParams(location.search).get('theme');var t=p||localStorage.getItem('aidevkit-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}document.documentElement.setAttribute('data-js','1');document.addEventListener('DOMContentLoaded',function(){var b=document.querySelector('.theme-toggle');if(b)b.setAttribute('aria-pressed',String(document.documentElement.getAttribute('data-theme')==='light'));});})();</script>
-<script defer src="${base}assets/demo.js"></script>
-<script defer src="${base}assets/terminal.js"></script></head>
+<script defer src="${asset(base, 'demo.js')}"></script>
+<script defer src="${asset(base, 'terminal.js')}"></script></head>
 <body><a class="skip" href="#main">Skip to content</a><nav class="nav"><div class="container nav-inner">
 <a class="brand" href="${base}index.html">ai<span class="dot">·</span>devkit</a>${nav}<span class="spacer"></span>
 <button class="theme-toggle" type="button" aria-pressed="false" onclick="(function(el){var d=document.documentElement;var t=d.getAttribute('data-theme')==='light'?'dark':'light';d.setAttribute('data-theme',t);try{localStorage.setItem('aidevkit-theme',t)}catch(e){}el.setAttribute('aria-pressed',String(t==='light'))})(this)" aria-label="Toggle light/dark theme" title="Toggle light/dark"><span aria-hidden="true">&#9680;</span></button>
