@@ -17,7 +17,7 @@ adaptation_notes: "This skill IS the adapter — it is stack-agnostic and ports 
 
 # devkit-init — adopt the whole pipeline into your repo
 
-**Run this inside the repository you want to adopt the pipeline in.** It takes a 7-stage development pipeline — **issue → branch → commit → test → PR → review → release**, each stage automated by a skill — and adapts that *whole* pipeline to YOUR project: it holds each stage's **intent** fixed and researches the tooling that fits your stack (the iOS originals are only the reference "from" side, e.g. `xcodebuild` → your build tool, App Store Connect CLI → your release tooling).
+**Run this inside the repository you want to adopt the pipeline in.** It takes a 7-stage development pipeline — **issue → branch → commit → test → PR → review → release**, each stage automated by a skill — and adapts that *whole* pipeline to YOUR project: it holds each stage's **intent** fixed and researches the tooling that fits your stack (the bundled reference examples are only the "from" side — e.g. one stack's build tool → your build tool, one stack's release CLI → your release/registry tooling).
 
 **Just run `/devkit-init`** — no arguments needed; it infers your stack from the repo (pass a stack hint only if you want to steer or override it). It runs like a **deepthink-grade planning session**: it reasons deeply about your project, proposes a written plan, and **waits for your approval before changing anything**.
 
@@ -62,17 +62,17 @@ Ask only what you could not reliably infer; batch into at most four questions:
 Default to sensible answers and state them — don't interrogate.
 
 ## Phase 4 — The reference pipeline (intent is what transfers)
-The **intent** is stable across platforms; only the **tooling** changes. iOS is the reference "from" side:
+The **intent** is stable across platforms; only the **tooling** changes. The third column is reference tooling for the loop — research the equivalents for your own stack:
 
-| Stage | Intent (stable) | iOS reference ("from") |
+| Stage | Intent (stable) | Reference tooling ("from") |
 |---|---|---|
 | issue | Capture work as a well-formed tracked issue | `gh` + create-issue |
 | branch | Turn an issue into a planned branch | `gh` + issue-to-branch |
 | commit | Group changes into clean atomic commits | `git` + smart-commit |
-| test | Decide coverage, run the suite, reach green | `xcodebuild test` + ensure-tests |
+| test | Decide coverage, run the suite, reach green | your test runner + ensure-tests |
 | PR | Verify readiness, open/update the PR | `gh` + finish-branch |
 | review | Review with evidence; respond to feedback | Claude Code / Codex native PR review |
-| release | Tag, promote to testers, ship | App Store Connect / Xcode Cloud / TestFlight (cut-rc, ship-release) |
+| release | Tag, promote to testers, ship | your CI + store/registry (cut-rc, ship-release) |
 
 Full detail on the pipeline and how to adopt it: https://alexandremorgado.github.io/ai-devkit/getting-started.html
 
