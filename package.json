@@ -1,6 +1,6 @@
 {
   "name": "ai-devkit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "An open toolbox of reusable AI-coding-agent workflows (skills) for Claude Code and Codex, plus a static portal generated from them.",
