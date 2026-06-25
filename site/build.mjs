@@ -490,9 +490,11 @@ function layout({ title, active, depth, body, description, path }) {
 <meta name="twitter:description" content="${escAttr(desc)}">
 <link rel="stylesheet" href="${asset(base, 'theme.css')}">
 <link rel="stylesheet" href="${asset(base, 'demo.css')}">
+<link rel="stylesheet" href="${asset(base, 'pick.css')}">
 <script>(function(){try{var p=new URLSearchParams(location.search).get('theme');var t=p||localStorage.getItem('aidevkit-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}document.documentElement.setAttribute('data-js','1');document.addEventListener('DOMContentLoaded',function(){var b=document.querySelector('.theme-toggle');if(b)b.setAttribute('aria-pressed',String(document.documentElement.getAttribute('data-theme')==='light'));});})();</script>
 <script defer src="${asset(base, 'demo.js')}"></script>
-<script defer src="${asset(base, 'terminal.js')}"></script></head>
+<script defer src="${asset(base, 'terminal.js')}"></script>
+<script defer src="${asset(base, 'pick.js')}"></script></head>
 <body><a class="skip" href="#main">Skip to content</a><nav class="nav"><div class="container nav-inner">
 <a class="brand" href="${base}index.html">ai<span class="dot">·</span>devkit</a>${nav}<span class="spacer"></span>
 <button class="theme-toggle" type="button" aria-pressed="false" onclick="(function(el){var d=document.documentElement;var t=d.getAttribute('data-theme')==='light'?'dark':'light';d.setAttribute('data-theme',t);try{localStorage.setItem('aidevkit-theme',t)}catch(e){}el.setAttribute('aria-pressed',String(t==='light'))})(this)" aria-label="Toggle light/dark theme" title="Toggle light/dark"><span aria-hidden="true">&#9680;</span></button>
@@ -557,7 +559,7 @@ function detailPage(a) {
   // cases) are meant to be read and stay expanded.
   const isRunnable = a.type === 'skill' || a.type === 'tool';
   // Demote any surviving body H1 so the detail header keeps the page's only h1.
-  const bodyHtml = resolveMarkers(mdToHtml(bodyMd)).replace(/<(\/?)h1>/g, '<$1h2>');
+  const bodyHtml = linkifySkills(resolveMarkers(mdToHtml(bodyMd)).replace(/<(\/?)h1>/g, '<$1h2>'), '../', a.name);
   const playbook = isRunnable
     ? `<details class="fold"><summary>Under the hood — the playbook the agent follows <span class="fold-sub">nothing in here is for you to run</span></summary><div class="fold-body"><p class="hint">Everything in this section is read and executed by the <em>agent</em> when you invoke the skill. It&rsquo;s published so you can audit it, learn from it, or adapt it — not because you need to follow it yourself.</p>${bodyHtml}</div></details>`
     : bodyHtml;
@@ -572,46 +574,265 @@ function detailPage(a) {
   return layout({ title, active: 'catalog', depth: 1, body, description: a.summary || a.description, path: `${a.outDir}/${a.slug}.html` });
 }
 
+// ---------- v0.2.0 portal generators (ported + sanitized from the internal source) ----------
+// skill auto-linking, inline Tabler icons, the release pipeline/journey diagrams, and the
+// interactive "pick your pain" home hero + skills coverflow. All theme-token based.
+
+let SKILL_SLUGS = new Set();
+function linkifySkills(html, base, selfSlug = '') {
+  if (!SKILL_SLUGS.size) return html;
+  // Single pass: match EITHER a whole anchor span (returned untouched) OR a bare <code> slug. The
+  // anchor alternative comes first, so a <code> inside an existing anchor is swallowed as part of
+  // that span and never linkified -- no nested anchors, and no sentinels to restore.
+  return html.replace(/(<a\b[^>]*>[\s\S]*?<\/a>)|(?<!<pre>)<code>(\/?[a-z0-9-]+)<\/code>/g, (m, anchor, slugRaw) => {
+    if (anchor) return anchor;
+    const slug = slugRaw.replace(/^\//, '');
+    return slug !== selfSlug && SKILL_SLUGS.has(slug)
+      ? `<a class="skill-ref" href="${base}skills/${slug}.html">${m}</a>`
+      : m;
+  });
+}
+
+const TABLER_ICONS = {"bug":"<path d=\"M9 9v-1a3 3 0 0 1 6 0v1\" /> <path d=\"M8 9h8a6 6 0 0 1 1 3v3a5 5 0 0 1 -10 0v-3a6 6 0 0 1 1 -3\" /> <path d=\"M3 13l4 0\" /> <path d=\"M17 13l4 0\" /> <path d=\"M12 20l0 -6\" /> <path d=\"M4 19l3.35 -2\" /> <path d=\"M20 19l-3.35 -2\" /> <path d=\"M4 7l3.75 2.4\" /> <path d=\"M20 7l-3.75 2.4\" />","bulb":"<path d=\"M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7\" /> <path d=\"M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3\" /> <path d=\"M9.7 17l4.6 0\" />","check":"<path d=\"M5 12l5 5l10 -10\" />","compass":"<path d=\"M8 16l2 -6l6 -2l-2 6l-6 2\" /> <path d=\"M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0\" /> <path d=\"M12 3l0 2\" /> <path d=\"M12 19l0 2\" /> <path d=\"M3 12l2 0\" /> <path d=\"M19 12l2 0\" />","eye":"<path d=\"M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0\" /> <path d=\"M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6\" />","eye-check":"<path d=\"M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0\" /> <path d=\"M11.102 17.957c-3.204 -.307 -5.904 -2.294 -8.102 -5.957c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6a19.5 19.5 0 0 1 -.663 1.032\" /> <path d=\"M15 19l2 2l4 -4\" />","flask":"<path d=\"M9 3l6 0\" /> <path d=\"M10 9l4 0\" /> <path d=\"M10 3v6l-4 11a.7 .7 0 0 0 .5 1h11a.7 .7 0 0 0 .5 -1l-4 -11v-6\" />","git-commit":"<path d=\"M9 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0\" /> <path d=\"M12 3l0 6\" /> <path d=\"M12 15l0 6\" />","git-merge":"<path d=\"M5 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M5 6a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M15 12a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M7 8l0 8\" /> <path d=\"M7 8a4 4 0 0 0 4 4h4\" />","git-pull-request":"<path d=\"M4 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M4 6a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M16 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M6 8l0 8\" /> <path d=\"M11 6h5a2 2 0 0 1 2 2v8\" /> <path d=\"M14 9l-3 -3l3 -3\" />","language":"<path d=\"M9 6.371c0 4.418 -2.239 6.629 -5 6.629\" /> <path d=\"M4 6.371h7\" /> <path d=\"M5 9c0 2.144 2.252 3.908 6 4\" /> <path d=\"M12 20l4 -9l4 9\" /> <path d=\"M19.1 18h-6.2\" /> <path d=\"M6.694 3l.793 .582\" />","list-search":"<path d=\"M11 15a4 4 0 1 0 8 0a4 4 0 1 0 -8 0\" /> <path d=\"M18.5 18.5l2.5 2.5\" /> <path d=\"M4 6h16\" /> <path d=\"M4 12h4\" /> <path d=\"M4 18h4\" />","lock":"<path d=\"M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6\" /> <path d=\"M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0\" /> <path d=\"M8 11v-4a4 4 0 1 1 8 0v4\" />","message-2":"<path d=\"M8 9h8\" /> <path d=\"M8 13h6\" /> <path d=\"M9 18h-3a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-3l-3 3l-3 -3\" />","package":"<path d=\"M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5\" /> <path d=\"M12 12l8 -4.5\" /> <path d=\"M12 12l0 9\" /> <path d=\"M12 12l-8 -4.5\" /> <path d=\"M16 5.25l-8 4.5\" />","player-pause":"<path d=\"M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12\" /> <path d=\"M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12\" />","player-play":"<path d=\"M7 4v16l13 -8l-13 -8\" />","replace":"<path d=\"M3 4a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4\" /> <path d=\"M15 16a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4\" /> <path d=\"M21 11v-3a2 2 0 0 0 -2 -2h-6l3 3m0 -6l-3 3\" /> <path d=\"M3 13v3a2 2 0 0 0 2 2h6l-3 -3m0 6l3 -3\" />","rocket":"<path d=\"M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3 -5a9 9 0 0 0 6 -8a3 3 0 0 0 -3 -3a9 9 0 0 0 -8 6a6 6 0 0 0 -5 3\" /> <path d=\"M7 14a6 6 0 0 0 -3 6a6 6 0 0 0 6 -3\" /> <path d=\"M14 9a1 1 0 1 0 2 0a1 1 0 1 0 -2 0\" />","shield-half":"<path d=\"M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3\" /> <path d=\"M12 3v18\" />","terminal-2":"<path d=\"M8 9l3 3l-3 3\" /> <path d=\"M13 15l3 0\" /> <path d=\"M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -12\" />"};
+function svgInner(name) {
+  return TABLER_ICONS[name]
+    ? '<svg class="ti-g" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TABLER_ICONS[name] + '</svg>'
+    : '';
+}
+function injectIcons(html) {
+  return html.replace(/<i class="ti ti-([a-z0-9-]+)"([^>]*)><\/i>/g, function (m, name, rest) {
+    return TABLER_ICONS[name] ? '<i class="ti ti-' + name + '"' + rest + '>' + svgInner(name) + '</i>' : m;
+  });
+}
+
+function pipelineHtml(base) {
+  // Clickable skill labels link the diagram to the catalog skill pages (depth-aware base).
+  const skill = (slug, x, y, label, anchor = 'start') =>
+    `<a href="${base}skills/${slug}.html"><text x="${x}" y="${y}" text-anchor="${anchor}" class="pp-skill">${label}</text></a>`;
+  return `<figure class="pipeline">
+<svg viewBox="0 0 940 322" xmlns="http://www.w3.org/2000/svg">
+<title>Development-to-release git-flow</title>
+<desc>Feature, fix and hotfix branches start from develop (issue-to-branch) and merge back after review (finish-branch); a release is cut from develop into a short-lived rc branch (cut-rc), built and approved, then ship-release tags the built commit and merges it into main (production), which syncs back into develop.</desc>
+  <defs>
+    <linearGradient id="ppSync" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#86e70b"/><stop offset="1" stop-color="#5b8def"/>
+    </linearGradient>
+    <filter id="ppGlow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="ppA-dev" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="pp-arrow-dev"/></marker>
+    <marker id="ppA-rc" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="pp-arrow-rc"/></marker>
+    <path id="ppJourney" fill="none" d="M150 96 L185 96 C185 50 222 44 255 44 C300 44 326 70 330 96 L372 96 C372 135 366 156 366 190 L548 190 C548 228 562 250 566 280 L640 280 C726 274 690 118 736 96"/>
+  </defs>
+  <text x="14" y="100" class="pp-lane pp-lane-dev">develop</text>
+  <text x="14" y="194" class="pp-lane pp-lane-rc">rc-X.Y.Z</text>
+  <text x="14" y="284" class="pp-lane pp-lane-main">main</text>
+  <line class="pp-rail pp-rail-dev"  x1="150" y1="96"  x2="810" y2="96"/>
+  <line class="pp-rail pp-rail-rc"   x1="360" y1="190" x2="560" y2="190"/>
+  <line class="pp-rail pp-rail-main" x1="150" y1="280" x2="810" y2="280"/>
+  <path class="pp-link pp-link-feat" pathLength="1" d="M185 96 C185 50 222 44 255 44 C300 44 326 70 330 94" marker-end="url(#ppA-dev)"/>
+  <circle class="pp-node pp-node-dev" cx="255" cy="44" r="5"/>
+  <text x="255" y="26" text-anchor="middle" class="pp-cap">create-issue · smart-commit · ensure-tests</text>
+  ${skill('issue-to-branch', 150, 70, '/issue-to-branch')}
+  ${skill('finish-branch', 336, 84, '/finish-branch')}
+  <path class="pp-link pp-link-rc" pathLength="1" d="M372 96 C372 135 366 156 366 185" marker-end="url(#ppA-rc)"/>
+  ${skill('cut-rc', 384, 150, '/cut-rc')}
+  <text x="384" y="180" class="pp-ann">build version · build → store approval</text>
+  <path class="pp-link pp-link-main" pathLength="1" d="M548 190 C548 228 562 250 566 272"/>
+  ${skill('ship-release', 582, 277, '/ship-release')}
+  <text x="582" y="294" class="pp-ann">tag X.Y.Z · "Release vX.Y.Z"</text>
+  <path class="pp-link pp-link-sync" pathLength="1" d="M648 280 C726 274 690 118 736 98" marker-end="url(#ppA-dev)"/>
+  <text x="652" y="158" class="pp-ann">sync · "RC vX.Y.Z"</text>
+  <circle class="pp-node pp-node-dev" cx="170" cy="96" r="5"/>
+  <circle class="pp-node pp-node-dev" cx="372" cy="96" r="5"/>
+  <circle class="pp-node pp-node-dev" cx="736" cy="96" r="5"/>
+  <circle class="pp-node pp-node-rc" cx="366" cy="190" r="5"/>
+  <circle class="pp-node pp-node-rc" cx="460" cy="190" r="5"/>
+  <circle class="pp-node pp-node-rc" cx="548" cy="190" r="5"/>
+  <circle class="pp-node pp-node-main" cx="170" cy="280" r="5"/>
+  <circle class="pp-node pp-node-main" cx="760" cy="280" r="5"/>
+  <circle class="pp-halo" cx="566" cy="280" r="13"/>
+  <circle class="pp-tag" cx="566" cy="280" r="6.5" filter="url(#ppGlow)"/>
+  <circle r="5.5" class="pp-comet" filter="url(#ppGlow)">
+    <animateMotion dur="11s" repeatCount="indefinite" calcMode="linear"><mpath href="#ppJourney"/></animateMotion>
+    <animate attributeName="opacity" dur="11s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.08;0.9;1" calcMode="linear"/>
+  </circle>
+  <text x="818" y="92" class="pp-role">integration</text>
+  <text x="818" y="276" class="pp-role">production</text>
+</svg>
+</figure>`;
+}
+
+// The step-by-step journey — the pipeline as ordered STATES, each reached by a skill (the transition).
+// A complementary lens to the git-flow PIPELINE (topology). Pure HTML/CSS (.j-* in theme.css):
+// phase-colored connector spine (blue develop -> teal release -> green production), gate diamonds at
+// the approval checkpoints, clickable skill chips, one-shot stagger-in. Embedded via {{JOURNEY:dev-release}}.
+function journeyHtml(base) {
+  const steps = [
+    ['develop', 'Issue filed', 'A bug or idea becomes a tracked, labeled issue.', [['create-issue', '/create-issue']]],
+    ['develop', 'Branch planned', 'The issue becomes a branch off develop, with a plan.', [['issue-to-branch', '/issue-to-branch']]],
+    ['develop', 'Changes committed', 'A messy working tree becomes clean, atomic commits.', [['smart-commit', '/smart-commit']]],
+    ['develop', 'Tests green', 'Coverage decided, the suite run, failures fixed.', [['ensure-tests', '/ensure-tests']]],
+    ['develop', 'PR opened', 'Readiness checked; the PR opens against develop.', [['finish-branch', '/finish-branch']]],
+    ['develop', 'Reviewed', 'Reviewed with Claude Code and Codex native PR review; replies stay evidence-based, never auto-posted.', [], 'gate'],
+    ['develop', 'Merged to develop', 'The approved PR merges into the integration branch.', []],
+    ['release', 'Release candidate', 'rc-X.Y.Z is cut from develop and the version is set.', [['cut-rc', '/cut-rc']]],
+    ['release', 'Built & distributed', 'CI builds the RC and distributes it to testers or a staging channel.', []],
+    ['release', 'Release gate', 'A release gate clears the build — store review, package-registry publish, or a deploy sign-off.', [], 'gate'],
+    ['release', 'Shipped', 'Tag the built commit, merge rc→main, publish the release.', [['ship-release', '/ship-release']]],
+    ['production', 'Live in production', 'main reflects production; develop is synced for the next cycle.', [], 'live'],
+  ];
+  const PHASE = { develop: 'Develop', release: 'Release', production: 'Production' };
+  let last = '';
+  const rows = steps.map(([phase, state, note, skills, kind], i) => {
+    const tag = phase !== last ? ((last = phase), `<span class="j-phasetag">${PHASE[phase]}</span>`) : '';
+    const chips = skills.length
+      ? `<div class="j-chips">${skills.map(([slug, label]) => `<a class="j-chip" href="${base}skills/${slug}.html">${esc(label)}</a>`).join('')}</div>`
+      : '';
+    return `<div class="j-step j-${phase}" style="animation-delay:${(i * 0.06).toFixed(2)}s">
+<div class="j-marker"><span class="j-node ${kind || ''}"></span></div>
+<div class="j-body">${tag}<div class="j-state">${esc(state)}</div>${chips}<div class="j-note">${esc(note)}</div></div>
+</div>`;
+  }).join('');
+  return `<figure class="journey" aria-label="The development-to-release pipeline as twelve ordered steps, each with the skill that runs it.">${rows}</figure>`;
+}
+
+// ---------- "pick your pain" interactive home ----------
+// Six everyday dev tasks; pick one and assets/pick.js plays it step by step, then shows the manual
+// steps skipped, an estimated time saved, and an animated follow-up flow. Flow nodes that name a
+// shipped skill link to its catalog page. Trusted template data — authored here, never user input.
+const PICK_SCENARIOS = [
+  { id: 'issue', icon: 'ti-bug', label: 'Report a bug, properly', sub: 'one sentence → a tracked issue', title: 'your-repo — claude',
+    steps: [
+      { cls: 'cmd', html: `<span class="pr">&gt;</span> <span class="c">/create-issue users stay logged in after deleting their account</span>`, why: `You report the problem in one sentence — that's the whole input.` },
+      { cls: 'out', html: `Searching existing issues… no duplicate`, why: `It checks for a dup first, so you don't file the same bug twice.` },
+      { cls: 'out', html: `Inferred type: bug · labels: <span class="gd">auth, privacy</span>`, why: `Type and labels come from your repo's own taxonomy.` },
+      { cls: 'out', html: `Drafted repro steps + acceptance criteria`, why: `It writes the boring scaffolding — repro, acceptance — for you.` },
+      { cls: 'ok', html: `&#10003; Draft ready (<span class="gd">#482</span>) — shown first, nothing filed without you`, why: `You approve the draft before anything is created.` },
+    ],
+    tail: `That's <span class="gd">/create-issue</span> — a sentence becomes a clean, tracked issue.`,
+    byHand: ['Search for an existing duplicate', 'Write a clear title + repro steps', 'Pick the right type and labels', 'Add acceptance criteria'],
+    saved: '≈ 20 min', savedNote: 'every issue, every time',
+    flow: [{ label: '/create-issue', slug: 'create-issue', on: true }, { label: '/issue-to-branch', slug: 'issue-to-branch' }, { label: '/smart-commit', slug: 'smart-commit' }, { label: '/finish-branch', slug: 'finish-branch' }] },
+  { id: 'commit', icon: 'ti-git-commit', label: 'A messy pile of changes', sub: '→ clean, atomic commits', title: 'your-repo — claude',
+    steps: [
+      { cls: 'cmd', html: `<span class="pr">&gt;</span> <span class="c">/smart-commit</span>`, why: `One command on a messy tree — no manual staging dance.` },
+      { cls: 'out', html: `14 changed files — grouping by module…`, why: `It reads every change and groups what belongs together.` },
+      { cls: 'out', html: `Plan: <span class="gd">3 commits</span> — Fix: debounce · Test: filter · Docs: changelog`, why: `You see the commit plan before anything happens.` },
+      { cls: 'out', html: `Plan approved`, why: `Nothing commits until you say yes.` },
+      { cls: 'ok', html: `&#10003; 3 atomic commits created — nothing pushed`, why: `Clean, semantic history — and it never pushes.` },
+    ],
+    tail: `That's <span class="gd">/smart-commit</span> — a messy tree becomes a clean history.`,
+    byHand: ['Eyeball 14 changed files', 'Decide what groups with what', 'Stage each hunk separately', 'Write three good messages'],
+    saved: '≈ 30–45 min', savedNote: 'clean history, every time',
+    flow: [{ label: '/smart-commit', slug: 'smart-commit', on: true }, { label: '/ensure-tests', slug: 'ensure-tests' }, { label: '/finish-branch', slug: 'finish-branch' }] },
+  { id: 'migrate', icon: 'ti-replace', label: 'A tedious migration', sub: 'sweeping edits, nothing committed', title: 'your-repo — claude',
+    steps: [
+      { cls: 'cmd', html: `<span class="pr">&gt;</span> <span class="c">rename the logging helper to a structured logger, everywhere</span>`, why: `One sentence describes a change that's an afternoon by hand.` },
+      { cls: 'out', html: `Found <span class="gd">118 call sites</span> across 42 files`, why: `It maps the full blast radius before editing — like a careful senior.` },
+      { cls: 'out', html: `Rewrote each, preserving the message + privacy level`, why: `It keeps each call's intent, not just the text.` },
+      { cls: 'out', html: `Wrote a summary of every change`, why: `You get a reviewable summary, not a mystery diff.` },
+      { cls: 'ok', html: `&#10003; Done — nothing committed; review with git diff`, why: `Nothing is committed or pushed. You review and decide.` },
+    ],
+    tail: `Plain English, no skill needed — and you always hold the diff.`,
+    byHand: ['grep for all 118 call sites', 'Edit every one by hand', 'Keep each message + privacy level right', 'Catch the ones you missed in review'],
+    saved: '≈ a full day', savedNote: 'an afternoon → minutes',
+    flow: [{ label: 'your edit', on: true }, { label: '/smart-commit', slug: 'smart-commit' }, { label: '/ensure-tests', slug: 'ensure-tests' }, { label: '/finish-branch', slug: 'finish-branch' }] },
+  { id: 'tests', icon: 'ti-flask', label: 'A flaky test before release', sub: 'a green suite, with judgment', title: 'your-repo — claude',
+    steps: [
+      { cls: 'cmd', html: `<span class="pr">&gt;</span> <span class="c">/ensure-tests</span>`, why: `A /command runs a written playbook — the same steps every time.` },
+      { cls: 'out', html: `Branch adds debouncing — new tests needed: <span class="gd">yes</span>`, why: `It decides whether your change actually needs coverage.` },
+      { cls: 'out', html: `Wrote 4 cases · ran the full suite`, why: `It writes the tests, then runs everything.` },
+      { cls: 'out', html: `1 failure — re-ran it on main in a throwaway worktree`, why: `Instead of guessing, it checks main to isolate the cause.` },
+      { cls: 'ok', html: `&#10003; Already red on main → a flaky mock, not your change → fixed`, why: `It tells your bug from a pre-existing flake — that's judgment.` },
+    ],
+    tail: `That's <span class="gd">/ensure-tests</span> — a green suite, and it knows what it's looking at.`,
+    byHand: ['Decide what needs coverage', 'Write the test cases', 'Run the suite, read the failures', 'Re-run on main to check blame', 'Track down the flake'],
+    saved: '≈ 1–2 h', savedNote: '+ the pre-release stress',
+    flow: [{ label: '/ensure-tests', slug: 'ensure-tests', on: true }, { label: '/finish-branch', slug: 'finish-branch' }, { label: 'review' }, { label: '/cut-rc', slug: 'cut-rc' }] },
+  { id: 'release', icon: 'ti-rocket', label: 'The release dance', sub: 'cut, build, ship — in order', title: 'app — claude',
+    steps: [
+      { cls: 'cmd', html: `<span class="pr">&gt;</span> <span class="c">/cut-rc --minor</span>`, why: `One command opens the whole release, from your integration branch.` },
+      { cls: 'out', html: `Pre-flight: develop clean · synced · no open release PRs`, why: `It refuses to cut a release from a dirty or stale branch.` },
+      { cls: 'out', html: `Version <span class="gd">3.0.4 → 3.1.0</span> — from your commit prefixes`, why: `It suggests the next version from your Feat / Fix history.` },
+      { cls: 'out', html: `Cut rc-3.1.0 · bumped version · pushed → CI build`, why: `Branch, bump, and the push that triggers the build — in one shot.` },
+      { cls: 'ok', html: `&#10003; Build → store; ship with /ship-release after approval`, why: `After approval, one command tags, merges, and publishes.` },
+    ],
+    tail: `That's <span class="gd">/cut-rc</span> → <span class="gd">/ship-release</span> — the release dance, automated and safe.`,
+    byHand: ['Bump the version file by hand', 'Cut and name the RC branch', 'Write the changelog', 'Tag, merge, back-merge — in order'],
+    saved: '≈ 1–2 h', savedNote: 'and no missed step',
+    flow: [{ label: '/cut-rc', slug: 'cut-rc', on: true }, { label: 'build · approve' }, { label: '/ship-release', slug: 'ship-release' }, { label: 'live' }] },
+  { id: 'think', icon: 'ti-bulb', label: 'A hard design call', sub: 'structured reasoning, trade-offs', title: 'your-repo — claude',
+    steps: [
+      { cls: 'cmd', html: `<span class="pr">&gt;</span> <span class="c">/deepthink how to cache images app-wide without unbounded memory</span>`, why: `You hand it the hard problem in plain words.` },
+      { cls: 'out', html: `Decomposing: constraints · current usage · eviction options`, why: `It breaks the problem down before proposing anything.` },
+      { cls: 'out', html: `Comparing 3 designs — <span class="gd">LRU vs cost-based vs hybrid</span>`, why: `It weighs real alternatives, not just the first idea.` },
+      { cls: 'ok', html: `&#10003; Strategy: recommendation · trade-offs · phased rollout`, why: `You get a reasoned plan to react to — a sharper starting point.` },
+    ],
+    tail: `That's <span class="gd">/deepthink</span> — a structured second brain for the hard calls.`,
+    byHand: ['Hold the whole problem in your head', 'Weigh the options on a whiteboard', 'Probably miss an edge case or two'],
+    saved: '≈ half a day', savedNote: 'a sharper decision',
+    flow: [{ label: '/deepthink', slug: 'deepthink', on: true }, { label: '/create-issue', slug: 'create-issue' }, { label: '/issue-to-branch', slug: 'issue-to-branch' }] },
+];
+const PICK_TRUST = [
+  ['ti-eye', 'It shows its work', 'Every step is visible — you watch what it reads and changes.'],
+  ['ti-git-commit', 'It never pushes for you', 'Commits and PRs wait for approval. You hold the merge button.'],
+  ['ti-lock', 'Your code isn&rsquo;t training data', 'On the Team plan, no training on our code by default.'],
+];
+// Render the interactive home hero + a JSON island the controller reads. `<` is escaped to < so
+// the embedded JSON can never terminate the <script> early (the step HTML contains <span> markup).
+function pickHomeHtml(assets) {
+  const known = new Set(assets.filter((a) => a.type === 'skill' || a.type === 'tool').map((a) => a.slug));
+  // The skill a dev would run for each scenario; null = no single command (send them to Start here).
+  const USE_NOW = { issue: 'create-issue', commit: 'smart-commit', migrate: null, tests: 'ensure-tests', release: 'cut-rc', think: 'deepthink' };
+  const scenarios = {};
+  for (const p of PICK_SCENARIOS) {
+    const un = USE_NOW[p.id];
+    scenarios[p.id] = {
+      title: p.title,
+      steps: p.steps.map((s) => ({ cls: s.cls, html: s.html, why: s.why })),
+      tail: p.tail, byHand: p.byHand, saved: p.saved, savedNote: p.savedNote,
+      flow: p.flow.map((f) => ({ label: f.label, href: (f.slug && known.has(f.slug)) ? `./skills/${f.slug}.html` : null, on: !!f.on })),
+      useNow: (un && known.has(un)) ? { href: `./skills/${un}.html`, label: `Use /${un} now` } : { href: './getting-started.html', label: 'Try it in your terminal' },
+    };
+  }
+  const data = JSON.stringify({ scenarios, trust: PICK_TRUST, icons: TABLER_ICONS }).replace(/</g, '\\u003c');
+  const cards = PICK_SCENARIOS.map((p) =>
+    `<button class="pyp-pick" data-id="${escAttr(p.id)}"><span class="pyp-run">&#9654; run</span><i class="ti ${escAttr(p.icon)}" aria-hidden="true"></i><span class="pyp-pl">${esc(p.label)}</span><span class="pyp-ps">${esc(p.sub)}</span></button>`).join('');
+  return `<header class="hero"><div class="container pyp">
+<div class="pyp-eyebrow"><span class="b">ai&middot;devkit</span> &mdash; an AI agent for your terminal</div>
+<p class="pyp-dek">Install it once and it runs your team&rsquo;s workflows — issues, branches, commits, PRs — in every repo.</p>
+<div class="pyp-hook">Which of these would you rather not do by hand?</div>
+<p class="pyp-sub" id="pyp-sub">Pick one — it plays out step by step (pause anytime). Then see what it skipped, and where it leads.</p>
+<div class="pyp-picks" id="pyp-picks">${cards}</div>
+<div class="pyp-stage" id="pyp-stage"></div>
+<div class="pyp-foot"><button class="pyp-ghost" id="pyp-trust-btn"><i class="ti ti-shield-half" aria-hidden="true"></i>what about trust?</button><a class="pyp-ghost" href="./getting-started.html"><i class="ti ti-rocket" aria-hidden="true"></i>how do I start?</a></div>
+<div id="pyp-reveal"></div>
+<script type="application/json" id="pyp-data">${data}</script>
+</div></header>`;
+}
+
+// A horizontal, clickable carousel of the installed skills — a visual taste of the catalog on the
+// home, with a CTA to the full list. pick.js wires the prev/next arrows; native scroll-snap otherwise.
+function skillsShowcaseHtml(assets) {
+  const all = assets.filter((a) => a.type === 'skill' || a.type === 'tool');
+  if (!all.length) return '';
+  // Curated showcase: create-issue leads (it lands centered first), and a few skills sit out of the deck.
+  const HIDE = new Set(['cleanup', 'ship-release', 'update-branch-plan']);
+  const ORDER = ['create-issue', 'issue-to-branch', 'smart-commit', 'ensure-tests', 'finish-branch', 'cut-rc', 'deepthink', 'devkit-init'];
+  const rank = (a) => { const i = ORDER.indexOf(a.slug); return i === -1 ? ORDER.length + 1 : i; };
+  const deck = all.filter((a) => !HIDE.has(a.slug)).sort((x, y) => rank(x) - rank(y) || (x.slug < y.slug ? -1 : 1));
+  const cards = deck.map((a) => {
+    const ex = a.example ? `<div class="pyp-deck-ex">${esc(a.example)}</div>` : '';
+    return `<a class="pyp-deck-card" href="./skills/${a.slug}.html"><div class="pyp-deck-name"><code>/${esc(a.slug)}</code></div><p class="pyp-deck-sum">${esc(a.summary || a.description || '')}</p>${ex}</a>`;
+  }).join('');
+  return `<section class="container pyp-skills">
+<div class="pyp-skills-head"><p class="pyp-explore-eyebrow">${all.length} skills, one install</p><div class="pyp-skills-nav"><button class="pyp-carobtn" id="pyp-caro-prev" aria-label="Scroll skills left">&lsaquo;</button><button class="pyp-carobtn" id="pyp-caro-next" aria-label="Scroll skills right">&rsaquo;</button></div></div>
+<div class="pyp-deck-wrap"><div class="pyp-deck" id="pyp-skills-deck">${cards}</div></div>
+<div class="pyp-skills-cta"><a class="pyp-cta-btn" href="./catalog.html">Browse the catalog &rarr;</a></div>
+</section>`;
+}
+
 function homePage(assets) {
-  const bySlug = new Map(assets.map((a) => [a.slug, a]));
-  const counts = TYPES.map((t) => { const n = assets.filter((a) => a.type === t.type).length; return n ? `${n} ${(n === 1 ? t.label.replace(/s$/, '') : t.label).toLowerCase()}` : null; }).filter(Boolean).join(' · ');
-
-  // The daily loop, in story order. Each node links to its page when the asset is in this build
-  // (the public build excludes private assets) and degrades to plain text when it isn't.
-  const loop = [
-    ['create-issue', 'Describe a bug or idea in one sentence — get a well-formed GitHub issue with labels, repro steps, and duplicate detection.'],
-    ['issue-to-branch', 'Turn an issue into a branch (or isolated worktree) with a development plan built from your repo.'],
-    ['smart-commit', 'Group a messy working tree into 2–5 clean, atomic commits. Shows you the plan first; never pushes.'],
-    ['ensure-tests', 'Decide what needs tests, run the suite, and fix failures until everything passes.'],
-    ['finish-branch', 'Check the branch is really done, finalize its plan, and open (or update) the PR.'],
-  ];
-  const anytime = [
-    ['create-branch', 'Start work without an issue — turn your changes or a one-line description into a named branch.'],
-    ['cleanup', 'Sweep out debug prints, leftover comments, and commented-out code before they ship.'],
-    ['update-branch-plan', 'Keep the branch plan honest — sync its checkboxes with what you actually committed.'],
-    ['deepthink', 'Structured extended reasoning for hard problems — decompose, weigh options, produce a strategy.'],
-    ['ultrafix', 'Hunt a stubborn bug with isolated worktrees and structured debug logging — evidence before fix.'],
-    ['codex-buddy', 'Bring in a second agent (Codex) for an independent review, a second opinion, or a deeper debugging pass — then cross-check what it finds.'],
-  ];
-  const node = ([slug, blurb]) => {
-    const a = bySlug.get(slug);
-    const inner = `<h3><code>/${esc(slug)}</code></h3><p>${esc(blurb)}</p>`;
-    return a ? `<a class="flow-node" href="./skills/${a.slug}.html">${inner}</a>` : `<div class="flow-node">${inner}</div>`;
-  };
-  const arrow = `<span class="flow-arrow" aria-hidden="true">&rarr;</span>`;
-
-  const terminal = terminalHtml(SESSIONS.home);
-
-  const body = `<header class="hero"><div class="container hero-grid">
-<div>
-<div class="kicker">open source</div>
-<h1>Teach your AI coding agent proven dev workflows</h1>
-<p>ai-devkit is a toolbox you install into an AI coding agent — <strong>Claude Code</strong> or <strong>Codex</strong>. One install teaches the agent a battle-tested daily loop: turn a sentence into a GitHub issue, an issue into a planned branch, messy changes into clean commits, and a finished branch into a PR.</p>
-<p class="muted">${counts} · install once, use in every repo</p>
-<p style="margin-top:18px"><a class="btn" href="./getting-started.html" style="text-decoration:none">Start here — from zero</a> <a class="link" href="./catalog.html" style="margin-left:14px">Browse the catalog &rarr;</a></p>
-</div>
-${terminal}
-</div></header>
+  const body = injectIcons(`${pickHomeHtml(assets)}
 
 <section class="container" id="new-to-agents"><div class="callout"><p><strong>New to AI coding agents?</strong> An agent is a program that runs in your terminal: you type what you want in plain English, and it reads your code, edits files, and runs commands — showing its work and asking before anything risky. If you can use a terminal, you can use everything here. <a href="./getting-started.html">The Start-here guide assumes zero AI experience &rarr;</a></p></div></section>
 
@@ -624,11 +845,12 @@ npm install -g @openai/codex</pre><p><a href="./getting-started.html">Which one?
 <div class="step"><span class="n">3</span><h3>Use it — in any repo</h3><p>The workflows now work everywhere you code. Try one:</p><pre>/create-issue the favorites list flashes when filtering</pre><p>In Codex the same skill is <code>$create-issue</code>. No agent at all? The skills are just markdown — <a href="./getting-started.html">read or paste the playbooks directly</a>.</p></div>
 </div></section>
 
-<section class="container" id="daily-loop"><h2>What you get: the daily loop${anchorLink('daily-loop')}</h2>
-<p class="muted" style="max-width:780px">These workflows chain into one loop — from &ldquo;someone found a bug&rdquo; to &ldquo;PR opened&rdquo;. Each is a <strong>skill</strong>: a written playbook the agent follows step by step, using your repo&rsquo;s own labels, branches, and test commands. Click one for what it does, a copy-paste example, and the full playbook.</p>
-<div class="flow">${loop.map(node).join(arrow)}</div>
-<h3 style="margin-top:30px">Plus, at any moment</h3>
-<div class="flow">${anytime.map(node).join('')}</div></section>
+<section class="container" id="pipeline"><h2>From a bug to a shipped release${anchorLink('pipeline')}</h2>
+<p class="muted" style="max-width:820px">Every skill is one step in a single arc — from &ldquo;someone filed a bug&rdquo; to &ldquo;it&rsquo;s live in production&rdquo;. Here&rsquo;s the whole flow as git topology, then the same path as ordered steps. Each labeled skill links to its page.</p>
+${pipelineHtml('./')}
+${journeyHtml('./')}</section>
+
+${skillsShowcaseHtml(assets)}
 
 <section class="container why-skills" id="why-skills"><div class="kicker">why skills</div>
 <h2>Repetitive work is exactly what a skill is for${anchorLink('why-skills')}</h2>
@@ -668,7 +890,7 @@ npm install -g @openai/codex</pre><p><a href="./getting-started.html">Which one?
 </div></section>
 
 <section class="container" id="contribute"><h2>Built something other teams could use?${anchorLink('contribute')}</h2>
-<p class="muted" style="max-width:780px">A skill is just a markdown file — if your team has a workflow worth sharing, contributing it takes one PR. <a href="./contribute.html">How to contribute &rarr;</a></p></section>`;
+<p class="muted" style="max-width:780px">A skill is just a markdown file — if your team has a workflow worth sharing, contributing it takes one PR. <a href="./contribute.html">How to contribute &rarr;</a></p></section>`);
   return layout({ title: 'Home', active: '', depth: 0, body, description: 'ai-devkit is a toolbox you install into an AI coding agent — Claude Code or Codex. One install teaches the agent a battle-tested daily loop: turn a sentence into a GitHub issue, an issue into a planned branch, messy changes into clean commits, and a finished branch into a PR.', path: '' });
 }
 
@@ -739,7 +961,7 @@ function staticPage(title, active, inner, rawMd, path, description) {
     .trim()
     .slice(0, 150);
   const desc = description || derived || undefined;
-  return layout({ title, active, depth: 0, description: desc, path, body: `<header class="hero" style="padding:56px 0 28px"><div class="container"><h1 style="font-size:36px">${esc(title)}</h1></div></header><section class="container content">${markdownCopyBlock(rawMd)}${inner}</section>` });
+  return layout({ title, active, depth: 0, description: desc, path, body: `<header class="hero" style="padding:56px 0 28px"><div class="container"><h1 style="font-size:36px">${esc(title)}</h1></div></header><section class="container content">${markdownCopyBlock(rawMd)}${linkifySkills(inner, './')}</section>` });
 }
 
 // ---------- build ----------
@@ -766,6 +988,10 @@ function build() {
     assets = publicAssets; // every survivor is both publish:public AND allowlisted
   }
   assets.sort((a, b) => (a.name < b.name ? -1 : 1));
+
+  // Skill auto-linking targets: only skills/tools that actually ship in THIS build, so a linkified
+  // <code>/slug</code> never points at a page the public build excluded.
+  SKILL_SLUGS = new Set(assets.filter((a) => a.type === 'skill' || a.type === 'tool').map((a) => a.slug));
 
   writeFileSync(join(DIST, 'index.html'), homePage(assets));
   writeFileSync(join(DIST, 'catalog.html'), catalogPage(assets));
