@@ -1,0 +1,72 @@
+<div class="demo-seq" data-steps="4" data-interval="1700">
+  <style>
+    .cr-wrap { display: grid; gap: 16px; font-family: var(--font); }
+
+    /* version hero — the signature: the version bump */
+    .cr-ver { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+              border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); padding: 13px 16px; }
+    .cr-ver-lbl { font-family: var(--mono); font-size: 10.5px; letter-spacing: .5px; color: var(--text-tertiary); text-transform: uppercase; }
+    .cr-ver-nums { display: inline-flex; align-items: baseline; gap: 9px; font-family: var(--mono); font-weight: 700; line-height: 1; }
+    .cr-vold { font-size: 24px; color: var(--text-secondary); transition: opacity .5s, color .5s; }
+    .demo-seq[data-step="1"] .cr-vold, .demo-seq[data-step="2"] .cr-vold,
+    .demo-seq[data-step="3"] .cr-vold, .demo-seq[data-step="4"] .cr-vold { opacity: .32; }
+    .cr-varrow { font-size: 15px; color: var(--text-tertiary); opacity: 0; transition: opacity .4s; }
+    .cr-vnew { font-size: 26px; color: var(--accent-text); opacity: 0; transform: translateY(5px); transition: opacity .55s, transform .55s; }
+    .demo-seq[data-step="1"] .cr-varrow, .demo-seq[data-step="2"] .cr-varrow,
+    .demo-seq[data-step="3"] .cr-varrow, .demo-seq[data-step="4"] .cr-varrow { opacity: 1; }
+    .demo-seq[data-step="1"] .cr-vnew, .demo-seq[data-step="2"] .cr-vnew,
+    .demo-seq[data-step="3"] .cr-vnew, .demo-seq[data-step="4"] .cr-vnew { opacity: 1; transform: translateY(0); }
+    .cr-ver-tag { margin-left: auto; font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 600;
+                  color: var(--accent-text); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+
+    /* under-the-hood stepper: what /cut-rc does, on any stack */
+    .cr-steps { display: grid; gap: 9px; }
+    .cr-step { display: flex; align-items: center; gap: 11px; font-size: 12.5px; color: var(--text-tertiary); opacity: .5; transition: opacity .45s, color .45s; }
+    .cr-step code { font-family: var(--mono); font-size: 11.5px; color: var(--text-secondary); }
+    .cr-dot { width: 9px; height: 9px; border-radius: 999px; flex: none; background: var(--surface-3);
+              border: 1px solid var(--border-strong); transition: background .45s, border-color .45s, box-shadow .45s; }
+    .cr-meta { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--text-tertiary); transition: color .45s; }
+    /* each step lights once reached and stays lit */
+    .demo-seq[data-step="1"] .cr-s1, .demo-seq[data-step="2"] .cr-s1, .demo-seq[data-step="3"] .cr-s1, .demo-seq[data-step="4"] .cr-s1,
+    .demo-seq[data-step="2"] .cr-s2, .demo-seq[data-step="3"] .cr-s2, .demo-seq[data-step="4"] .cr-s2,
+    .demo-seq[data-step="3"] .cr-s3, .demo-seq[data-step="4"] .cr-s3,
+    .demo-seq[data-step="4"] .cr-s4 { opacity: 1; color: var(--text-secondary); }
+    .demo-seq[data-step="1"] .cr-s1 .cr-dot, .demo-seq[data-step="2"] .cr-s1 .cr-dot, .demo-seq[data-step="3"] .cr-s1 .cr-dot, .demo-seq[data-step="4"] .cr-s1 .cr-dot,
+    .demo-seq[data-step="2"] .cr-s2 .cr-dot, .demo-seq[data-step="3"] .cr-s2 .cr-dot, .demo-seq[data-step="4"] .cr-s2 .cr-dot,
+    .demo-seq[data-step="3"] .cr-s3 .cr-dot, .demo-seq[data-step="4"] .cr-s3 .cr-dot {
+      background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    /* the release turns green once it is published */
+    .demo-seq[data-step="4"] .cr-s4 .cr-dot { background: var(--green); border-color: var(--green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 18%, transparent); }
+    .demo-seq[data-step="4"] .cr-s4 .cr-meta { color: var(--green); }
+
+    /* CI build bar */
+    .cr-bar { width: 66px; height: 5px; border-radius: 999px; background: var(--surface-3); overflow: hidden; margin-left: auto; }
+    .cr-fill { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--accent); transition: width .9s cubic-bezier(.4,0,.2,1), background .45s; }
+    .demo-seq[data-step="3"] .cr-fill { width: 62%; }
+    .demo-seq[data-step="4"] .cr-fill { width: 100%; background: var(--green); }
+
+    .cr-cap { font-size: 11.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; min-height: 1.2em; }
+    .cr-cap::after { content: "pre-flight: integration branch clean \00B7 synced"; }
+    .demo-seq[data-step="1"] .cr-cap::after { content: "version bumped \2192 3.1.0 (minor)"; }
+    .demo-seq[data-step="2"] .cr-cap::after { content: "rc-3.1.0 cut \00B7 upstream unset"; }
+    .demo-seq[data-step="3"] .cr-cap::after { content: "pushed \2014 CI building the release\2026"; }
+    .demo-seq[data-step="4"] .cr-cap::after { content: "released \2014 v3.1.0 published \2713"; }
+  </style>
+
+  <div class="cr-wrap">
+    <div class="cr-ver">
+      <span class="cr-ver-lbl">version</span>
+      <span class="cr-ver-nums"><span class="cr-vold">3.0.4</span><span class="cr-varrow">&rarr;</span><span class="cr-vnew">3.1.0</span></span>
+      <span class="cr-ver-tag">minor</span>
+    </div>
+
+    <div class="cr-steps">
+      <div class="cr-step cr-s1"><span class="cr-dot"></span><span>Bump the <code>version</code> file</span><span class="cr-meta">3.0.4 &rarr; 3.1.0</span></div>
+      <div class="cr-step cr-s2"><span class="cr-dot"></span><span>Cut <code>rc-3.1.0</code> from the integration branch</span><span class="cr-meta">upstream unset</span></div>
+      <div class="cr-step cr-s3"><span class="cr-dot"></span><span>Push &rarr; CI build</span><span class="cr-bar"><span class="cr-fill"></span></span></div>
+      <div class="cr-step cr-s4"><span class="cr-dot"></span><span>Released</span><span class="cr-meta">v3.1.0</span></div>
+    </div>
+
+    <div class="cr-cap"><span class="demo-pulse"></span></div>
+  </div>
+</div>
