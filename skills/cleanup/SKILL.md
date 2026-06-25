@@ -1,6 +1,7 @@
 ---
 name: cleanup
-description: Detect transitional comments, debug code, obvious comments, and commented-out code
+description: Find and remove code noise before a PR — debug prints/logs, leftover commented-out code, and obvious "what" comments. Use when cleaning up a branch, stripping debug logging, or checking for dead code / comment rot.
+user-invocable: true
 argument-hint: "[--all, --branch, --quiet, --fix]"
 allowed-tools: ["Bash", "Read", "Edit", "Glob", "Grep"]
 summary: Detect and optionally remove code noise — debug prints, transitional/obvious comments, and commented-out code — across languages. Pairs with smart-commit.

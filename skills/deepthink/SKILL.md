@@ -3,7 +3,7 @@ name: deepthink
 description: Deep analytical thinking for complex problems requiring extended reasoning
 user-invocable: true
 argument-hint: Detailed description of the complex problem or challenge
-allowed-tools: ["*"]
+allowed-tools: ["Read", "Grep", "Glob", "Bash", "WebFetch", "TodoWrite"]
 disable-model-invocation: true
 summary: A structured extended-reasoning framework — decompose, explore options, analyze deeply, apply patterns, assess risk, and produce an implementation strategy — for any stack.
 example: "/deepthink how should we cache images app-wide without unbounded memory growth?"

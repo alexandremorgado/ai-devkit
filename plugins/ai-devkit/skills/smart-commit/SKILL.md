@@ -1,6 +1,7 @@
 ---
 name: smart-commit
 description: Automated commit organization — groups uncommitted changes into 2–5 atomic, semantically-prefixed commits by module, presents a plan, and commits on approval. Never auto-pushes. Any language.
+user-invocable: true
 argument-hint: Optional flags (--interactive/-i, --think, --no-plan, --no-cleanup, --max-commits N, --dry-run)
 allowed-tools: ["Bash", "Read", "Grep", "Edit", "Glob", "AskUserQuestion"]
 summary: Group uncommitted changes into 2–5 atomic, semantically-prefixed commits by module, present a plan, and commit on approval — never auto-pushes. Any language.
