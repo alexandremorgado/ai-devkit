@@ -381,3 +381,67 @@ a.flow-node:hover { border-color: var(--accent); transform: translateY(-2px); ba
   .theme-toggle { width: 40px; height: 40px; }
   .chip, .demo-replay, .demo-step { padding: 9px 15px; }
 }
+
+/* ---------- Auto-linked skill references (linkifySkills) ---------- */
+.content a.skill-ref { text-decoration: none; }
+.content a.skill-ref code { color: var(--accent-text); border-bottom: 1px dotted color-mix(in srgb, var(--accent-text) 45%, transparent); transition: border-color .15s; }
+.content a.skill-ref:hover code { border-bottom-color: var(--accent-text); }
+
+/* ---------- Release pipeline diagram (git-flow topology) ----------
+   Token-based, so it tracks the Signal-Teal palette; rails are blue (develop) -> teal (rc)
+   -> green (main); connectors draw in once on load (no perpetual motion). */
+.pipeline { margin: 24px 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; overflow-x: auto; }
+.pipeline svg { display: block; width: 100%; height: auto; min-width: 640px; }
+.pp-rail { fill: none; stroke-width: 3.5; stroke-linecap: round; }
+.pp-rail-dev { stroke: var(--blue); } .pp-rail-rc { stroke: var(--accent); } .pp-rail-main { stroke: var(--green); }
+.pp-link { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: pp-draw .8s ease forwards; }
+.pp-link-feat { stroke: var(--blue); }
+.pp-link-rc   { stroke: var(--accent); animation-delay: .18s; }
+.pp-link-main { stroke: var(--accent); animation-delay: .5s; }
+.pp-link-sync { stroke: url(#ppSync); animation-delay: .82s; }
+.pp-node { fill: var(--bg); stroke-width: 2.5; }
+.pp-node-dev { stroke: var(--blue); } .pp-node-rc { stroke: var(--accent); } .pp-node-main { stroke: var(--green); }
+.pp-tag { fill: var(--accent); stroke: var(--accent); }
+.pp-halo { fill: var(--accent-soft); }
+.pp-arrow-dev { fill: var(--blue); } .pp-arrow-rc { fill: var(--accent); } .pp-arrow-main { fill: var(--green); }
+.pp-lane { font: 600 14px var(--mono); letter-spacing: .03em; }
+.pp-lane-dev { fill: var(--blue); } .pp-lane-rc { fill: var(--accent-text); } .pp-lane-main { fill: var(--green); }
+.pp-cmd { fill: var(--accent-text); font: 600 12.5px var(--mono); }
+.pp-ann { fill: var(--text-secondary); font: 12px var(--mono); }
+.pp-role { fill: var(--text-tertiary); font: 11px var(--mono); letter-spacing: .03em; }
+.pp-cap { fill: var(--text-tertiary); font: 10.5px var(--mono); }
+.pp-skill { fill: var(--accent-text); font: 600 11.5px var(--mono); }
+.pp-skill:hover { text-decoration: underline; }
+.pp-comet { fill: var(--accent); }
+@keyframes pp-draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .pp-link { animation: none; stroke-dashoffset: 0; } .pp-comet { display: none; } }
+
+/* ---------- Release journey (the pipeline as ordered states) ----------
+   Connector spine runs blue (develop) -> teal (release) -> green (production); approval gates are
+   diamonds; skill chips are clickable command tokens; states stagger in once on load. */
+.journey { margin: 24px 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 22px 26px; }
+.j-step { display: grid; grid-template-columns: 40px 1fr; align-items: start; opacity: 0; transform: translateY(8px); animation: j-in .5s ease forwards; }
+.j-marker { position: relative; display: flex; justify-content: center; padding-top: 3px; }
+.j-marker::before { content: ""; position: absolute; top: 18px; bottom: -6px; left: 50%; transform: translateX(-50%); width: 2.5px; background: var(--border-strong); }
+.j-step:last-child .j-marker::before { display: none; }
+.j-develop .j-marker::before { background: var(--blue); }
+.j-release .j-marker::before { background: var(--accent); }
+.j-production .j-marker::before { background: var(--green); }
+.j-node { width: 15px; height: 15px; border-radius: 50%; background: var(--surface); border: 2.5px solid var(--border-strong); position: relative; z-index: 1; }
+.j-develop .j-node { border-color: var(--blue); }
+.j-release .j-node { border-color: var(--accent); }
+.j-production .j-node { border-color: var(--green); }
+.j-node.gate { border-radius: 2px; transform: rotate(45deg); }
+.j-node.live { width: 17px; height: 17px; background: var(--green); border-color: var(--green); }
+.j-body { padding-bottom: 16px; min-width: 0; }
+.j-phasetag { display: inline-block; font: 600 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; padding: 2px 7px; border-radius: 5px; margin-bottom: 8px; }
+.j-develop .j-phasetag { color: var(--blue); background: rgba(91, 141, 239, .12); }
+.j-release .j-phasetag { color: var(--accent-text); background: var(--accent-soft); }
+.j-production .j-phasetag { color: var(--green); background: rgba(134, 231, 11, .12); }
+.j-state { font: 600 14.5px var(--mono); color: var(--text); }
+.j-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
+.j-chip { font: 600 12px var(--mono); color: var(--accent-text); background: var(--accent-soft); border: 1px solid var(--accent-strong); border-radius: 6px; padding: 2px 9px; text-decoration: none; }
+.j-chip:hover { background: var(--accent-soft); text-decoration: underline; }
+.j-note { font: 13px var(--font); color: var(--text-secondary); line-height: 1.5; max-width: 62ch; }
+@keyframes j-in { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .j-step { animation: none; opacity: 1; transform: none; } }

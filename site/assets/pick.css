@@ -1,0 +1,141 @@
+/* Pick-your-pain interactive home. Scoped to .pyp; reuses the portal's theme variables
+   (--accent signal teal, --surface, --green, --mono, …) so it tracks light/dark like the rest of the site.
+   The whole experience is a single centered column; the loud moment is the terminal run, everything
+   around it stays quiet. Behaviour lives in pick.js; markup is emitted by pickHomeHtml() in build.mjs. */
+.pyp { padding-block: 8px 12px; }
+.pyp-eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: .03em; color: var(--text-tertiary); text-align: center; margin: 0 0 16px; }
+.pyp-eyebrow .b { color: var(--accent-text); }
+.pyp .pyp-dek { font-size: 15px; color: var(--text-secondary); text-align: center; max-width: 540px; margin: 0 auto 20px; line-height: 1.55; }
+.pyp-hook { font-size: 32px; font-weight: 600; line-height: 1.16; letter-spacing: -0.01em; margin: 22px auto 14px; max-width: 580px; text-align: center; }
+.pyp .pyp-sub { color: var(--text-secondary); font-size: 15px; line-height: 1.6; margin: 0 auto 34px; max-width: 500px; text-align: center; }
+
+.pyp-picks { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); max-width: 800px; margin: 0 auto; }
+.pyp-pick { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 16px 20px; cursor: pointer; color: var(--text); font: inherit; transition: border-color .18s, transform .12s, background .18s; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 9px; min-height: 128px; }
+.pyp-pick:hover { border-color: var(--accent); transform: translateY(-3px); }
+.pyp-pick.on { border-color: var(--accent); background: var(--accent-soft); }
+.pyp-pick i { font-size: 23px; color: var(--accent-text); }
+.pyp-pl { font-size: 13.5px; font-weight: 500; line-height: 1.3; }
+.pyp-ps { font-size: 11.5px; color: var(--text-secondary); line-height: 1.45; }
+.pyp-run { position: absolute; bottom: 11px; right: 13px; font-family: var(--mono); font-size: 11px; letter-spacing: .02em; color: var(--text-tertiary); opacity: 0; transition: opacity .15s; }
+.pyp-pick:hover .pyp-run, .pyp-pick.on .pyp-run { opacity: 1; color: var(--accent-text); }
+@media (max-width: 680px) { .pyp-picks { grid-template-columns: repeat(2, 1fr); max-width: 470px; } }
+@media (max-width: 430px) { .pyp-picks { grid-template-columns: 1fr; max-width: 320px; } }
+
+.pyp-stage { max-width: 800px; margin: 26px auto 0; }
+.pyp-term { background: var(--code-bg, #0d0d0d); border: 1px solid var(--border); border-radius: 11px 11px 0 0; border-bottom: none; overflow: hidden; }
+.pyp-tbar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.pyp-dot { width: 9px; height: 9px; border-radius: 50%; }
+.pyp-tt { margin-left: 6px; font-family: var(--mono); font-size: 11px; color: var(--text-tertiary); }
+.pyp-tbody { padding: 15px 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9; min-height: 124px; }
+.pyp-ln { opacity: 0; transform: translateY(4px); transition: opacity .26s ease, transform .26s ease; }
+.pyp-ln.show { opacity: 1; transform: none; }
+.pyp-ln .pr { color: var(--text-tertiary); }
+.pyp-ln .c { color: var(--text); }
+.pyp-ln.out { color: var(--text-secondary); }
+.pyp-ln .gd { color: var(--accent-text); }
+.pyp-ln.ok { color: var(--green); }
+.pyp-ln.ok .gd { color: var(--green); }
+
+.pyp-why { background: var(--accent-soft); border: 1px solid var(--border); border-top: none; border-radius: 0 0 11px 11px; padding: 12px 16px; font-size: 13px; color: var(--text); line-height: 1.5; min-height: 46px; }
+.pyp-why .wl { font-family: var(--mono); font-size: 11px; color: var(--accent-text); margin-right: 9px; }
+.pyp-prog { height: 2px; background: var(--border); border-radius: 2px; margin-top: 12px; overflow: hidden; }
+.pyp-progfill { height: 100%; width: 0; background: var(--accent); }
+
+.pyp-ctrls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; }
+.pyp-nb { font: inherit; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--text); border-radius: 9px; padding: 8px 15px; cursor: pointer; }
+.pyp-nb.g { background: var(--accent); color: #062722; border-color: var(--accent); }
+.pyp-nb:disabled { opacity: .32; cursor: default; }
+.pyp-cnt { font-family: var(--mono); font-size: 11.5px; color: var(--text-secondary); min-width: 42px; text-align: center; }
+.pyp-pp { margin-left: 6px; font: inherit; font-size: 12px; color: var(--text-secondary); background: none; border: none; cursor: pointer; display: flex; gap: 5px; align-items: center; }
+.pyp-pp:hover { color: var(--accent-text); }
+.pyp-pp i { font-size: 14px; }
+
+.pyp-after { margin-top: 18px; opacity: 0; height: 0; overflow: hidden; transition: opacity .3s; }
+.pyp-after.show { opacity: 1; height: auto; }
+.pyp .pyp-tail { font-size: 13px; color: var(--text); line-height: 1.55; margin: 0 0 14px; }
+.pyp-payoff { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.pyp-byhand { flex: 1; min-width: 240px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.pyp-ph { font-size: 11px; font-family: var(--mono); color: var(--text-tertiary); margin-bottom: 7px; letter-spacing: .03em; }
+.pyp-byhand ul { margin: 0; padding: 0; list-style: none; }
+.pyp-byhand li { font-size: 12px; color: var(--text-secondary); line-height: 1.85; display: flex; gap: 7px; align-items: baseline; }
+.pyp-byhand li i { color: var(--accent-text); font-size: 13px; }
+.pyp-byhand li span { text-decoration: line-through; text-decoration-color: var(--text-tertiary); }
+.pyp-saved { background: var(--accent-soft); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; min-width: 130px; }
+.pyp-sv { font-size: 22px; font-weight: 600; color: var(--accent-text); line-height: 1.1; }
+.pyp-svn { font-size: 11.5px; color: var(--text-secondary); margin-top: 4px; line-height: 1.35; }
+.pyp-est { font-family: var(--mono); font-size: 11px; color: var(--text-tertiary); }
+
+.pyp-floww { margin-bottom: 14px; }
+.pyp-flow { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
+.pyp-node { font-family: var(--mono); font-size: 11.5px; color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 5px 9px; opacity: 0; transform: translateY(3px); transition: opacity .32s ease, transform .32s ease; text-decoration: none; }
+a.pyp-node:hover { border-color: var(--accent); color: var(--accent-text); }
+.pyp-flow.go .pyp-node { opacity: 1; transform: none; }
+.pyp-node.on { color: var(--accent-text); border-color: var(--accent); background: var(--accent-soft); }
+.pyp-arrow { color: var(--text-tertiary); margin: 0 5px; opacity: 0; transition: opacity .32s ease; }
+.pyp-flow.go .pyp-arrow { opacity: 1; }
+
+.pyp-acts { display: flex; flex-wrap: wrap; gap: 9px; }
+.pyp-ab { font: inherit; font-size: 12px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); border-radius: 8px; padding: 6px 12px; cursor: pointer; display: inline-block; text-decoration: none; }
+.pyp-ab.g { background: var(--accent); color: #062722; border-color: var(--accent); font-weight: 500; }
+.pyp-ab:hover { border-color: var(--accent); }
+
+.pyp-foot { max-width: 800px; margin: 30px auto 0; padding-top: 16px; border-top: 1px solid var(--border); display: flex; gap: 20px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.pyp-ghost { font: inherit; font-size: 12.5px; color: var(--text-secondary); background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 5px; }
+.pyp-ghost:hover { color: var(--accent-text); }
+.pyp-ghost i { font-size: 15px; }
+.pyp-rev { max-width: 800px; margin: 14px auto 0; display: grid; gap: 9px; grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 680px) { .pyp-rev { grid-template-columns: 1fr; max-width: 470px; } }
+/* Informational, not clickable: borderless, no left indent — matches the Start-here glossary. */
+.pyp-tcard { background: none; border: none; border-radius: 0; padding: 0; }
+.pyp-tcard .th { font-size: 12.5px; font-weight: 500; display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
+.pyp-tcard .th i { color: var(--accent-text); font-size: 15px; }
+.pyp-tcard p { margin: 0; font-size: 11.5px; color: var(--text-secondary); line-height: 1.5; }
+
+/* "Explore the rest" — the only other thing on the home: quiet links to the deeper pages,
+   so the home stays a single decision (pick a task) instead of a wall of sections. */
+.pyp-explore { margin-top: 56px; }
+.pyp-explore-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; color: var(--text-tertiary); text-align: center; margin: 0 0 16px; }
+.pyp-explore-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 920px; margin: 0 auto; }
+.pyp-ex { display: flex; flex-direction: column; gap: 7px; padding: 16px 16px 15px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); text-decoration: none; color: var(--text); transition: border-color .18s, transform .12s; }
+.pyp-ex:hover { border-color: var(--accent); transform: translateY(-2px); }
+.pyp-ex .top { display: flex; align-items: center; justify-content: space-between; }
+.pyp-ex i { font-size: 19px; color: var(--accent-text); }
+.pyp-ex .arr { color: var(--text-tertiary); font-size: 13px; }
+.pyp-ex h3 { margin: 4px 0 0; font-size: 13px; font-weight: 500; }
+.pyp-ex p { margin: 0; font-size: 11.5px; color: var(--text-secondary); line-height: 1.45; }
+@media (max-width: 760px) { .pyp-explore-grid { grid-template-columns: repeat(2, 1fr); max-width: 480px; } }
+@media (max-width: 430px) { .pyp-explore-grid { grid-template-columns: 1fr; max-width: 320px; } }
+
+/* Quick-install block on the home page (between the hero and the skills deck). */
+.pyp-install { margin-top: 52px; text-align: center; }
+.pyp-install-box { position: relative; max-width: 540px; margin: 14px auto 0; text-align: left; }
+.pyp-install-box pre { margin: 0; background: var(--code-bg, #0d0d0d); border: 1px solid var(--border); border-radius: 10px; padding: 15px 60px 15px 18px; font-family: var(--mono); font-size: 13px; color: var(--code-text, #e6e6e6); line-height: 1.75; overflow-x: auto; white-space: pre; }
+.pyp-install-note { font-size: 12.5px; color: var(--text-secondary); margin: 14px auto 0; max-width: 560px; line-height: 1.6; }
+.pyp-install-note a { color: var(--accent-text); white-space: nowrap; }
+
+/* Skills showcase — a horizontal carousel with prev/next arrows; a clickable, visual taste of the
+   catalog. Each card shows the command and a one-line example in the terminal idiom, then a CTA. */
+.pyp-skills { margin-top: 56px; }
+.pyp-skills-head { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 16px; }
+.pyp-skills-head .pyp-explore-eyebrow { margin: 0; }
+.pyp-skills-nav { display: flex; gap: 6px; }
+.pyp-carobtn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); font-size: 16px; line-height: 1; cursor: pointer; transition: border-color .15s, color .15s; }
+.pyp-carobtn:hover { border-color: var(--accent); color: var(--accent-text); }
+.pyp-deck-wrap { position: relative; max-width: 1040px; margin: 0 auto; height: 528px; overflow: hidden; -webkit-mask-image: linear-gradient(to right, transparent, #000 13%, #000 87%, transparent); mask-image: linear-gradient(to right, transparent, #000 13%, #000 87%, transparent); }
+.pyp-deck { position: relative; height: 100%; perspective: 1600px; }
+.pyp-deck-card { position: absolute; top: 24px; left: 50%; width: 360px; height: 480px; margin-left: -180px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 28px 26px; display: flex; flex-direction: column; color: var(--text); text-decoration: none; cursor: pointer; overflow: hidden; transform-origin: center center; transition: transform .55s cubic-bezier(.2,.7,.2,1), opacity .45s ease, border-color .2s; box-shadow: 0 28px 64px rgba(0,0,0,.55); will-change: transform, opacity; }
+.pyp-deck-card.active { border-color: var(--accent); }
+.pyp-deck-name code { font-family: var(--mono); font-size: 18.5px; color: var(--accent-text); background: none; padding: 0; }
+.pyp-deck-sum { margin: 16px 0 0; font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 11; -webkit-box-orient: vertical; overflow: hidden; }
+.pyp-deck-ex { margin-top: auto; font-family: var(--mono); font-size: 12px; color: var(--text-tertiary); background: var(--code-bg, #0d0d0d); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; line-height: 1.5; max-height: 80px; overflow: hidden; }
+@media (max-width: 560px) { .pyp-deck-card { width: 290px; height: 432px; margin-left: -145px; } .pyp-deck-wrap { height: 476px; } }
+@media (prefers-reduced-motion: reduce) { .pyp-deck-card { transition: none; } }
+.pyp-skills-cta { text-align: center; margin-top: 18px; }
+.pyp-cta-btn { display: inline-block; font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: 9px; background: var(--accent); color: #062722; text-decoration: none; }
+.pyp-cta-btn:hover { filter: brightness(1.06); }
+
+/* Kill the theme's a:hover underline on every card/link component (loaded after theme.css, so wins). */
+.pyp-deck-card:hover, .pyp-ex:hover, a.pyp-node:hover, .pyp-cta-btn:hover, .pyp-ab:hover, .pyp-ghost:hover { text-decoration: none; }
+
+/* Inline-SVG icon sizing: 1em square, inherits color via stroke=currentColor on the .ti parent. */
+.ti-g { width: 1em; height: 1em; display: inline-block; vertical-align: -0.125em; flex: 0 0 auto; }
