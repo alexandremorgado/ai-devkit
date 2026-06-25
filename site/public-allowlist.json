@@ -12,6 +12,9 @@
     "update-branch-plan",
     "deepthink",
     "ultrafix",
-    "codex-buddy"
+    "codex-buddy",
+    "cut-rc",
+    "ship-release",
+    "devkit-init"
   ]
 }
