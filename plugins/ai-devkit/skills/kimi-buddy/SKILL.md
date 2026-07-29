@@ -142,8 +142,6 @@ kimi --continue --prompt \
 4. Mark disagreements clearly and explain which evidence supports each side.
 5. Check that Kimi addressed the full scope rather than the easiest part.
 
-Kimi is a colleague, not an authority.
-
 ### 7. Present results
 
 Report:

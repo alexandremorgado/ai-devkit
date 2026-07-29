@@ -256,16 +256,16 @@ const SESSIONS = {
     lines: [
       ['cmd', '/fable-orchestrator migrate the sync layer to async/await'],
       ['blank'],
-      ['out', 'Model check: <span class="t-accent">Fable</span> — orchestrating (judgment stays here, code goes to agents)'],
-      ['out', 'Plan: 3 briefs — core (Claude Opus) · call-site sweep (GPT-5.6 Sol) · cross-family audit (Kimi K3)'],
-      ['out', 'Dispatched to parallel worktrees — board live:'],
+      ['out', 'Model check: <span class="t-accent">Fable</span> · orchestrating (judgment stays here; code goes to agents)'],
+      ['out', 'Plan: 3 briefs · core (Claude Opus) · call-site sweep (GPT-5.6 Sol) · cross-family audit (Kimi K3)'],
+      ['out', 'Dispatched to parallel worktrees · board live:'],
       ['txt', 'core&nbsp;· sync engine → async/await · Opus · xhigh&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; · running'],
       ['txt', 'sweep · 61 call sites&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; · GPT-5.6 Sol · high · running'],
       ['txt', 'audit · cross-family review&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; · Kimi K3 · quality&nbsp; · queued'],
-      ['out', 'audit returned — the Opus diff races cancel against the pending writer → core sent back to the same agent'],
-      ['out', 'core rev-2 <span class="t-accent">✓</span> · sweep <span class="t-accent">✓</span> · audit <span class="t-accent">✓</span> — merging serially, one build per merge'],
+      ['out', 'audit returned · the Opus diff races cancel against the pending writer → core sent back to the same agent'],
+      ['out', 'core rev-2 <span class="t-accent">✓</span> · sweep <span class="t-accent">✓</span> · audit <span class="t-accent">✓</span> · merging serially, one build per merge'],
       ['blank'],
-      ['ok', '3 lanes closed — Fable wrote <span class="t-accent">0 lines</span> of code itself'],
+      ['ok', '3 lanes closed · Fable wrote <span class="t-accent">0 lines</span> of code itself'],
     ],
   },
   'create-issue': {
@@ -722,17 +722,17 @@ function journeyHtml(base) {
 // steps skipped, an estimated time saved, and an animated follow-up flow. Flow nodes that name a
 // shipped skill link to its catalog page. Trusted template data — authored here, never user input.
 const PICK_SCENARIOS = [
-  { id: 'orchestrate', icon: 'ti-compass', label: 'A big task, orchestrated', sub: 'Fable plans — agents write the code', title: 'your-repo — claude (fable)',
+  { id: 'orchestrate', icon: 'ti-compass', label: 'A big task, orchestrated', sub: 'Fable plans; agents write the code', title: 'your-repo — claude (fable)',
     steps: [
-      { cls: 'cmd', html: `<span class="pr">&gt;</span> <span class="c">/fable-orchestrator migrate the sync layer to async/await</span>`, why: `One command turns the top model into a tech lead — it plans, briefs, and reviews instead of typing.` },
-      { cls: 'out', html: `Model check: <span class="gd">Fable</span> — this skill only runs on the Fable model`, why: `The gate is explicit — on Opus or Sonnet the skill stops and says so, instead of orchestrating without a tier gap.` },
-      { cls: 'out', html: `Plan: <span class="gd">3 briefs</span> — core (Opus · xhigh) · sweep (GPT-5.6 Sol · high) · audit (Kimi K3 · quality)`, why: `Lanes are picked by distinct strength and marginal cost — a CLI on a subscription you already pay for is a free parallel executor.` },
-      { cls: 'out', html: `3 parallel worktrees · the Kimi lane audits the <span class="gd">Opus</span> diff`, why: `A reviewer never shares a model family with the author — same-family models share blind spots, so their errors agree.` },
-      { cls: 'ok', html: `&#10003; Merged serially — Fable authored <span class="gd">0 lines</span> itself`, why: `Top-model judgment on every decision, at a fraction of top-model token cost.` },
+      { cls: 'cmd', html: `<span class="pr">&gt;</span> <span class="c">/fable-orchestrator migrate the sync layer to async/await</span>`, why: `One command turns the top model into a tech lead. It plans, briefs, and reviews instead of typing.` },
+      { cls: 'out', html: `Model check: <span class="gd">Fable</span> · this skill only runs on the Fable model`, why: `The gate is explicit. On Opus or Sonnet, the skill stops and says so because there is no tier gap.` },
+      { cls: 'out', html: `Plan: <span class="gd">3 briefs</span> · core (Opus · xhigh) · sweep (GPT-5.6 Sol · high) · audit (Kimi K3 · quality)`, why: `Lanes are picked by distinct strength and marginal cost. A CLI on a subscription you already pay for is a free parallel executor.` },
+      { cls: 'out', html: `3 parallel worktrees · the Kimi lane audits the <span class="gd">Opus</span> diff`, why: `A reviewer never shares a model family with the author because same-family models share blind spots.` },
+      { cls: 'ok', html: `&#10003; Merged serially · Fable authored <span class="gd">0 lines</span> itself`, why: `Fable handles each decision while cheaper agents generate the long implementation.` },
     ],
-    tail: `That's <span class="gd">/fable-orchestrator</span> — Fable leads, cheaper models type. Fable-model sessions only.`,
+    tail: `That's <span class="gd">/fable-orchestrator</span>: Fable leads, cheaper models type. Fable-model sessions only.`,
     byHand: ['Feed the whole task to one expensive context', 'Watch the top model burn tokens typing boilerplate', 'Re-explain everything after every compaction', 'Review the work with the same eyes that wrote it'],
-    saved: '≈ half the tokens', savedNote: 'same quality, independently reviewed',
+    saved: '≈ half the tokens', savedNote: 'with an independent review',
     flow: [{ label: '/fable-orchestrator', slug: 'fable-orchestrator', on: true }, { label: '/smart-commit', slug: 'smart-commit' }, { label: '/ensure-tests', slug: 'ensure-tests' }, { label: '/finish-branch', slug: 'finish-branch' }] },
   { id: 'issue', icon: 'ti-bug', label: 'Report a bug, properly', sub: 'one sentence → a tracked issue', title: 'your-repo — claude',
     steps: [
