@@ -1,0 +1,231 @@
+<div class="demo-seq" data-steps="5" data-interval="2000">
+  <style>
+    /* A violet for the third family, mixed from theme tokens so it tracks both themes and stays
+       clearly apart from the blue (Claude) and green (OpenAI) chips. */
+    .fo-wrap { display: grid; gap: 13px; font-family: var(--font); --fo-violet: color-mix(in srgb, var(--blue) 55%, var(--red)); }
+
+    /* caption — the one line that names what this frame is teaching */
+    .fo-cap { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; min-height: 1.2em; }
+    .fo-cap::after { content: "one task in \2014  Fable plans, delegates every line"; }
+    .demo-seq[data-step="1"] .fo-cap::after { content: "3 briefs out \2014  three model families, parallel worktrees"; }
+    .demo-seq[data-step="2"] .fo-cap::after { content: "core returns \2014  routed to Kimi, never its own family"; }
+    .demo-seq[data-step="3"] .fo-cap::after { content: "the cross-family audit finds a race \2014  back to the same agent"; }
+    .demo-seq[data-step="4"] .fo-cap::after { content: "rev-2 clean \2014  serial merges begin"; }
+    .demo-seq[data-step="5"] .fo-cap::after { content: "3 lanes closed \2014  build green after every merge"; }
+
+    /* lead strip — the Fable main loop. Accent-filled, so it never reads as one more lane. */
+    .fo-lead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+               border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent); border-radius: var(--radius-sm);
+               background: var(--accent-soft); padding: 9px 12px; }
+    .fo-lead-chip { display: inline-flex; align-items: center; gap: 6px; flex: none;
+                    font-size: 11px; font-weight: 700; letter-spacing: .2px; padding: 3px 10px; border-radius: 999px;
+                    background: var(--accent); color: #062722; }
+    .fo-lead-act { flex: 1 1 auto; min-width: 0; font-size: 11.5px; line-height: 1.35; color: var(--text-secondary); min-height: 1.2em; }
+    .fo-lead-act::after { content: "decomposing into 3 briefs \2014  goal \00B7  scope \00B7  acceptance criteria"; }
+    .demo-seq[data-step="1"] .fo-lead-act::after { content: "briefs out \2014  three families, reviewing as lanes return"; }
+    .demo-seq[data-step="2"] .fo-lead-act::after { content: "core diff in \2014  routed to Kimi, not to another Claude"; }
+    .demo-seq[data-step="3"] .fo-lead-act::after { content: "audit finding accepted \2014  core sent back, context warm"; }
+    .demo-seq[data-step="4"] .fo-lead-act::after { content: "reviewing the GPT sweep diff \2014  then merging serially"; }
+    .demo-seq[data-step="5"] .fo-lead-act::after { content: "done"; }
+    .fo-lead-state { margin-left: auto; font-family: var(--mono); font-size: 10px; letter-spacing: .4px;
+                     text-transform: uppercase; color: var(--accent-text); transition: color .4s ease; }
+    .fo-lead-state::after { content: "planning"; }
+    .demo-seq[data-step="1"] .fo-lead-state::after { content: "dispatching"; }
+    .demo-seq[data-step="2"] .fo-lead-state::after, .demo-seq[data-step="3"] .fo-lead-state::after { content: "reviewing"; }
+    .demo-seq[data-step="4"] .fo-lead-state::after { content: "merging"; }
+    .demo-seq[data-step="5"] .fo-lead-state::after { content: "\2713  done"; }
+    .demo-seq[data-step="5"] .fo-lead-state { color: var(--green); }
+
+    /* the three lanes */
+    .fo-lanes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .fo-lane { display: flex; flex-direction: column; gap: 6px; min-width: 0;
+               border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2);
+               padding: 10px 11px; opacity: .48;
+               transition: opacity .5s ease, border-color .45s ease, box-shadow .45s ease; }
+    .demo-seq[data-step="1"] .fo-lane, .demo-seq[data-step="2"] .fo-lane,
+    .demo-seq[data-step="3"] .fo-lane, .demo-seq[data-step="4"] .fo-lane,
+    .demo-seq[data-step="5"] .fo-lane { opacity: 1; }
+    /* lanes are independent — they never wake up, land, or settle in lockstep */
+    .fo-sweep { transition-delay: .1s; }
+    .fo-audit { transition-delay: .22s; }
+
+    .fo-head { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+    .fo-name { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--text); letter-spacing: .2px; }
+    .fo-work { font-size: 11.5px; line-height: 1.35; color: transparent; background: var(--surface-3);
+               border-radius: 4px; transition: color .5s ease, background .5s ease; }
+    .demo-seq[data-step="1"] .fo-work, .demo-seq[data-step="2"] .fo-work,
+    .demo-seq[data-step="3"] .fo-work, .demo-seq[data-step="4"] .fo-work,
+    .demo-seq[data-step="5"] .fo-work { color: var(--text-secondary); background: transparent; }
+    .fo-sweep .fo-work { transition-delay: .09s; }
+    .fo-audit .fo-work { transition-delay: .18s; }
+
+    /* model chip — the brief landing on the lane: it drops in from the lead strip. One colour per
+       model family, so a glance tells you whether a reviewer shares a family with the author. */
+    .fo-model { align-self: flex-start; font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+                padding: 2px 8px; border-radius: 999px;
+                transform: translateY(-34px) scale(.9); opacity: 0;
+                transition: transform .6s cubic-bezier(.3,1.2,.5,1), opacity .4s ease; }
+    .demo-seq[data-step="1"] .fo-model, .demo-seq[data-step="2"] .fo-model,
+    .demo-seq[data-step="3"] .fo-model, .demo-seq[data-step="4"] .fo-model,
+    .demo-seq[data-step="5"] .fo-model { transform: none; opacity: 1; }
+    .fo-sweep .fo-model { transition-delay: .12s; }
+    .fo-audit .fo-model { transition-delay: .24s; }
+    .fo-claude { color: var(--blue); background: color-mix(in srgb, var(--blue) 12%, transparent);
+                 border: 1px solid color-mix(in srgb, var(--blue) 45%, transparent); }
+    .fo-openai { color: var(--green); background: color-mix(in srgb, var(--green) 11%, transparent);
+                 border: 1px solid color-mix(in srgb, var(--green) 45%, transparent); }
+    .fo-moonshot { color: var(--fo-violet); background: color-mix(in srgb, var(--fo-violet) 13%, transparent);
+                   border: 1px solid color-mix(in srgb, var(--fo-violet) 48%, transparent); }
+
+    /* status badge — vocabulary: queued / running / returned / revising / merged / done.
+       Family colours stay on the model chips, so statuses use accent, neutral, red and green only. */
+    .fo-badge { flex: none; display: inline-flex; align-items: center; gap: 5px;
+                font-size: 10.5px; font-weight: 700; letter-spacing: .2px; padding: 2px 8px; border-radius: 999px;
+                color: var(--text-tertiary); background: var(--surface-3); border: 1px solid var(--border-strong);
+                transition: color .35s ease, background .35s ease, border-color .35s ease, box-shadow .4s ease; }
+    .fo-badge::after { content: "queued"; }
+    .fo-sweep .fo-badge { transition-delay: .06s; }
+    .fo-audit .fo-badge { transition-delay: .12s; }
+
+    /* running (accent) */
+    .demo-seq[data-step="1"] .fo-core .fo-badge, .demo-seq[data-step="1"] .fo-sweep .fo-badge,
+    .demo-seq[data-step="2"] .fo-sweep .fo-badge, .demo-seq[data-step="2"] .fo-audit .fo-badge,
+    .demo-seq[data-step="3"] .fo-sweep .fo-badge {
+      color: var(--accent-text); background: var(--accent-soft);
+      border-color: color-mix(in srgb, var(--accent) 42%, transparent); }
+    .demo-seq[data-step="1"] .fo-core .fo-badge::after, .demo-seq[data-step="1"] .fo-sweep .fo-badge::after,
+    .demo-seq[data-step="2"] .fo-sweep .fo-badge::after, .demo-seq[data-step="2"] .fo-audit .fo-badge::after,
+    .demo-seq[data-step="3"] .fo-sweep .fo-badge::after { content: "running"; }
+
+    /* returned — the diff is on Fable's desk, waiting on a verdict */
+    .demo-seq[data-step="2"] .fo-core .fo-badge,
+    .demo-seq[data-step="3"] .fo-audit .fo-badge,
+    .demo-seq[data-step="4"] .fo-sweep .fo-badge {
+      color: var(--text); background: var(--surface-3); border-color: var(--text-tertiary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--text) 7%, transparent); }
+    .demo-seq[data-step="2"] .fo-core .fo-badge::after,
+    .demo-seq[data-step="3"] .fo-audit .fo-badge::after,
+    .demo-seq[data-step="4"] .fo-sweep .fo-badge::after { content: "returned"; }
+
+    /* revising — the review found a defect and sent it back to the same agent */
+    .demo-seq[data-step="3"] .fo-core .fo-badge {
+      color: var(--red); background: color-mix(in srgb, var(--red) 13%, transparent);
+      border-color: color-mix(in srgb, var(--red) 50%, transparent); }
+    .demo-seq[data-step="3"] .fo-core .fo-badge::after { content: "revising"; }
+
+    /* merged / done (green) — the audit lane ships no code, so it closes as done, not merged */
+    .demo-seq[data-step="4"] .fo-core .fo-badge, .demo-seq[data-step="5"] .fo-core .fo-badge,
+    .demo-seq[data-step="5"] .fo-sweep .fo-badge,
+    .demo-seq[data-step="4"] .fo-audit .fo-badge, .demo-seq[data-step="5"] .fo-audit .fo-badge {
+      color: var(--green); background: color-mix(in srgb, var(--green) 12%, transparent);
+      border-color: color-mix(in srgb, var(--green) 50%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 14%, transparent); }
+    .demo-seq[data-step="4"] .fo-core .fo-badge::after, .demo-seq[data-step="5"] .fo-core .fo-badge::after,
+    .demo-seq[data-step="5"] .fo-sweep .fo-badge::after { content: "\2713  merged"; }
+    .demo-seq[data-step="4"] .fo-audit .fo-badge::after, .demo-seq[data-step="5"] .fo-audit .fo-badge::after { content: "\2713  done"; }
+    /* the merge tick lands after core's, because merges are serial */
+    .demo-seq[data-step="5"] .fo-sweep .fo-badge { transition-delay: .28s; }
+
+    /* running pulse — hidden unless the lane is actually working, desynced per lane */
+    .fo-run { display: none; }
+    .demo-seq[data-step="1"] .fo-core .fo-run, .demo-seq[data-step="1"] .fo-sweep .fo-run,
+    .demo-seq[data-step="2"] .fo-sweep .fo-run, .demo-seq[data-step="2"] .fo-audit .fo-run,
+    .demo-seq[data-step="3"] .fo-sweep .fo-run { display: inline-block; }
+    .fo-run .demo-pulse { width: 5px; height: 5px; vertical-align: middle; }
+    .fo-sweep .demo-pulse { animation-delay: -.55s; }
+    .fo-audit .demo-pulse { animation-delay: -1.1s; }
+
+    /* per-lane ring: neutral under review, red while revising, green once closed */
+    .demo-seq[data-step="2"] .fo-core, .demo-seq[data-step="3"] .fo-audit, .demo-seq[data-step="4"] .fo-sweep {
+      border-color: var(--text-tertiary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--text) 6%, transparent); }
+    .demo-seq[data-step="3"] .fo-core {
+      border-color: color-mix(in srgb, var(--red) 48%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 12%, transparent); }
+    .demo-seq[data-step="4"] .fo-core, .demo-seq[data-step="4"] .fo-audit, .demo-seq[data-step="5"] .fo-lane {
+      border-color: color-mix(in srgb, var(--green) 45%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 10%, transparent); }
+
+    /* lane activity line */
+    .fo-act { font-size: 11px; line-height: 1.35; color: var(--text-tertiary); min-height: 2.7em;
+              transition: color .45s ease; }
+    .fo-act::after { content: "awaiting brief"; }
+    .demo-seq[data-step="1"] .fo-core .fo-act::after { content: "worktree wt/core \00B7  boundary drafted"; }
+    .demo-seq[data-step="2"] .fo-core .fo-act::after { content: "returned \2014  SyncEngine.perform \2192  async throws"; }
+    .demo-seq[data-step="3"] .fo-core .fo-act::after { content: "cancel races the writer \2014  revising, same agent"; }
+    .demo-seq[data-step="4"] .fo-core .fo-act::after { content: "rev-2 \2713  accepted \00B7  merged first"; }
+    .demo-seq[data-step="5"] .fo-core .fo-act::after { content: "in main \00B7  build green"; }
+    .demo-seq[data-step="1"] .fo-sweep .fo-act::after { content: "worktree wt/sweep \00B7  61 call sites"; }
+    .demo-seq[data-step="2"] .fo-sweep .fo-act::after { content: "own pace \2014  no lockstep with the others"; }
+    .demo-seq[data-step="3"] .fo-sweep .fo-act::after { content: "still sweeping \00B7  subscription lane, $0 marginal"; }
+    .demo-seq[data-step="4"] .fo-sweep .fo-act::after { content: "diff returned \2014  Fable reviews it"; }
+    .demo-seq[data-step="5"] .fo-sweep .fo-act::after { content: "merged after core \00B7  build green"; }
+    .fo-audit .fo-act::after { content: "awaiting the core diff"; }
+    .demo-seq[data-step="1"] .fo-audit .fo-act::after { content: "queued \2014  reviews only what it did not write"; }
+    .demo-seq[data-step="2"] .fo-audit .fo-act::after { content: "reading the Opus diff \00B7  1M-token context"; }
+    .demo-seq[data-step="3"] .fo-audit .fo-act::after { content: "\2713  found: cancel races the pending writer"; }
+    .demo-seq[data-step="4"] .fo-audit .fo-act::after { content: "\2713  accepted \2014  this lane ships no code"; }
+    .demo-seq[data-step="5"] .fo-audit .fo-act::after { content: "closed \00B7  uncorrelated eyes, by design"; }
+    /* the accepted / merged beats read green */
+    .demo-seq[data-step="4"] .fo-core .fo-act, .demo-seq[data-step="5"] .fo-core .fo-act,
+    .demo-seq[data-step="5"] .fo-sweep .fo-act,
+    .demo-seq[data-step="3"] .fo-audit .fo-act, .demo-seq[data-step="4"] .fo-audit .fo-act,
+    .demo-seq[data-step="5"] .fo-audit .fo-act { color: var(--green); transition-delay: .5s; }
+    .demo-seq[data-step="3"] .fo-core .fo-act { color: var(--red); }
+
+    /* summary strip — reserved in flow at every step so nothing jumps when it appears */
+    .fo-sum { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+              border-top: 1px dashed var(--border); padding-top: 11px;
+              opacity: 0; transform: translateY(5px); transition: opacity .5s ease, transform .5s ease; }
+    .demo-seq[data-step="5"] .fo-sum { opacity: 1; transform: none; transition-delay: .5s; }
+    .fo-sum-text { flex: 1 1 auto; min-width: 0; font-size: 12px; line-height: 1.4; color: var(--text-secondary); }
+    .fo-sum-text::before { content: "\2713  "; color: var(--green); font-weight: 700; }
+    .fo-sum-text strong { color: var(--accent-text); font-weight: 700; }
+    .fo-sum-note { margin-left: auto; flex: none; font-size: 11px; color: var(--text-tertiary); }
+
+    @media (max-width: 640px) {
+      .fo-lanes { grid-template-columns: 1fr; }
+      .fo-lane { flex-direction: row; flex-wrap: wrap; align-items: center; }
+      .fo-head { flex: 1 1 100%; }
+      .fo-act { min-height: 1.35em; flex: 1 1 100%; }
+      .fo-lead-state, .fo-sum-note { margin-left: 0; }
+      .fo-sum-note { flex: 1 1 100%; }
+    }
+  </style>
+
+  <div class="fo-wrap">
+    <div class="fo-cap"><span class="demo-pulse"></span></div>
+
+    <div class="fo-lead">
+      <span class="fo-lead-chip">Fable &middot; lead</span>
+      <span class="fo-lead-act"></span>
+      <span class="fo-lead-state"></span>
+    </div>
+
+    <div class="fo-lanes">
+      <div class="fo-lane fo-core">
+        <div class="fo-head"><span class="fo-name">core</span><span class="fo-badge"><span class="fo-run"><span class="demo-pulse"></span></span></span></div>
+        <div class="fo-work">sync engine &rarr; async/await</div>
+        <span class="fo-model fo-claude">Opus &middot; xhigh</span>
+        <div class="fo-act"></div>
+      </div>
+      <div class="fo-lane fo-sweep">
+        <div class="fo-head"><span class="fo-name">sweep</span><span class="fo-badge"><span class="fo-run"><span class="demo-pulse"></span></span></span></div>
+        <div class="fo-work">61 call sites updated</div>
+        <span class="fo-model fo-openai">GPT-5.6 Sol &middot; high</span>
+        <div class="fo-act"></div>
+      </div>
+      <div class="fo-lane fo-audit">
+        <div class="fo-head"><span class="fo-name">audit</span><span class="fo-badge"><span class="fo-run"><span class="demo-pulse"></span></span></span></div>
+        <div class="fo-work">cross-family review of core</div>
+        <span class="fo-model fo-moonshot">Kimi K3 &middot; quality</span>
+        <div class="fo-act"></div>
+      </div>
+    </div>
+
+    <div class="fo-sum">
+      <span class="fo-sum-text">3 briefs &middot; 3 model families &middot; 1 cross-family finding &mdash; <strong>Fable wrote 0 lines of code</strong></span>
+      <span class="fo-sum-note">no diff reviewed by the family that wrote it</span>
+    </div>
+  </div>
+</div>
