@@ -79,13 +79,13 @@ codex exec \
 
 There's also a built-in review entry point — `codex review` runs a code review non-interactively.
 
-Write-capable modes (`implement`, refactor-apply) — opt in explicitly with `--full-auto` (it bundles `--sandbox workspace-write`):
+Write-capable modes (`implement`, refactor-apply) — opt in explicitly with `--sandbox workspace-write`:
 
 ```bash
 codex exec \
   -m <model> \
   --config model_reasoning_effort="<effort>" \
-  --full-auto \
+  --sandbox workspace-write \
   --skip-git-repo-check \
   "<enriched prompt>" < /dev/null 2>"$STDERR_LOG"
 ```
@@ -94,7 +94,7 @@ Rules that keep it reliable:
 
 - **Always** pass `--skip-git-repo-check` and pipe `< /dev/null` so Codex never blocks waiting on stdin (essential for background runs).
 - **Never discard stderr** (`2>"$STDERR_LOG"`, not `2>/dev/null`): it carries noisy thinking *and* the real error diagnostics. On failure, read it.
-- Add `--full-auto` **only** for write modes. Read-only modes stay on `--sandbox read-only`.
+- Add `--sandbox workspace-write` **only** for write modes. Read-only modes stay on `--sandbox read-only`.
 - For a long run (expected over ~2 minutes), run it in the background.
 - For a large prompt (big diffs, a whole plan file), pass it on stdin with the `-` sentinel instead of as an argument.
 

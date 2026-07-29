@@ -50,11 +50,16 @@ A skill is invoked by typing `/its-name` in Claude Code, or `$its-name` in Codex
 | The working tree is messy | `/smart-commit` | 2–5 atomic commits, plan shown first, never pushes |
 | Before you push | `/ensure-tests` | Decides what needs tests, runs the suite, fixes failures to 100% |
 | The work feels done | `/finish-branch` | Readiness checks, plan archived, PR opened or updated |
+| Starting a release | `/cut-rc --minor` | Pre-flights the integration branch, cuts an RC, bumps the version, and starts the build |
+| The release is approved | `/ship-release` | Tags the built commit, publishes the release, syncs branches, and cleans up the RC |
 | Anytime, before review | `/cleanup --branch` | Finds debug prints, leftover comments, commented-out code |
 | Stuck on something hard | `/deepthink …the problem…` | Structured extended reasoning → an implementation strategy |
 | A bug won't reproduce or won't die | `/ultrafix …the symptom…` | Isolated worktrees + structured logging → root cause + verified fix |
 | Want a second agent's take | `/codex-buddy review this branch` | Codex reviews or debugs independently; Claude cross-checks the findings |
+| Want a third, uncorrelated opinion | `/kimi-buddy review this branch` | Kimi tackles huge context, vision-plus-code, or long-horizon work; the primary agent cross-checks it |
+| A big task to orchestrate across agents | `/fable-orchestrator` | Fable plans, briefs, reviews, and merges while cheaper agents write every line of code; requires Fable as the main-loop model |
 | The plan drifted from reality | `/update-branch-plan` | Conservatively syncs plan checkboxes with your commits |
+| Setting up the whole loop in a repo | `/devkit-init` | Analyzes the stack, proposes an adapted pipeline, then scaffolds only what you approve |
 
 ## The core idea: adapt, don't install
 
@@ -68,7 +73,7 @@ Every skill in the catalog is tagged for portability and ships an **"Adapt to yo
 
 ## What the plugin installs
 
-Exactly the contents of `skills/` — twelve `SKILL.md` playbooks, no hooks, agents, or background processes:
+Exactly the contents of `skills/` — seventeen `SKILL.md` playbooks, no hooks, agents, or background processes:
 
 | Skill | What it does |
 |---|---|
@@ -79,11 +84,16 @@ Exactly the contents of `skills/` — twelve `SKILL.md` playbooks, no hooks, age
 | `smart-commit` | Group changes into atomic, semantically-prefixed commits. |
 | `ensure-tests` | Decide whether tests are needed, run the suite, fix failures, annotate the plan. |
 | `finish-branch` | Validate readiness, run tests/build, finalize the plan, open/update the PR. |
+| `cut-rc` | Open a release cycle: pre-flight the integration branch, resolve the version, cut the RC, bump the version file, and start the build. |
+| `ship-release` | Ship an approved RC: validate, tag, merge, publish, back-merge, clean up, and announce the release. |
 | `cleanup` | Detect transitional comments, debug code, and commented-out code. |
 | `update-branch-plan` | Update branch-plan checkboxes from recent work. |
 | `deepthink` | Extended reasoning for complex problems. |
 | `ultrafix` | Debug a stubborn bug with isolated worktrees and structured logging. |
 | `codex-buddy` | Bring in Codex as a second agent for review, a second opinion, debugging, or delegated implementation. |
+| `kimi-buddy` | Bring in Kimi for a third opinion, huge-context analysis, vision-plus-code reasoning, or long-horizon coding. |
+| `fable-orchestrator` | Turn a Fable-model Claude Code session into a tech lead: Fable plans, briefs, reviews, and merges while cheaper agents (Claude tiers, Codex, Kimi, any agent CLI) write every line of code. Works only when the session's main-loop model is Fable. |
+| `devkit-init` | Analyze a repo's stack, propose an adapted development pipeline, then scaffold the approved skills and process docs behind three gates. |
 
 The live **[Catalog](https://alexandremorgado.github.io/ai-devkit/catalog.html)** is the always-current list, with a copy-paste example and the full playbook on every skill's page.
 

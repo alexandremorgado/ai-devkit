@@ -250,6 +250,24 @@ const SESSIONS = {
       ['ok', 'Renamed — review the diff with <span class="t-accent">git diff</span>'],
     ],
   },
+  'fable-orchestrator': {
+    title: 'your-repo — claude (fable)',
+    about: 'the fable-orchestrator skill routing one task across three model families: Fable plans and reviews, cheaper agents write the code',
+    lines: [
+      ['cmd', '/fable-orchestrator migrate the sync layer to async/await'],
+      ['blank'],
+      ['out', 'Model check: <span class="t-accent">Fable</span> · orchestrating (judgment stays here; code goes to agents)'],
+      ['out', 'Plan: 3 briefs · core (Claude Opus) · call-site sweep (GPT-5.6 Sol) · cross-family audit (Kimi K3)'],
+      ['out', 'Dispatched to parallel worktrees · board live:'],
+      ['txt', 'core&nbsp;· sync engine → async/await · Opus · xhigh&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; · running'],
+      ['txt', 'sweep · 61 call sites&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; · GPT-5.6 Sol · high · running'],
+      ['txt', 'audit · cross-family review&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; · Kimi K3 · quality&nbsp; · queued'],
+      ['out', 'audit returned · the Opus diff races cancel against the pending writer → core sent back to the same agent'],
+      ['out', 'core rev-2 <span class="t-accent">✓</span> · sweep <span class="t-accent">✓</span> · audit <span class="t-accent">✓</span> · merging serially, one build per merge'],
+      ['blank'],
+      ['ok', '3 lanes closed · Fable wrote <span class="t-accent">0 lines</span> of code itself'],
+    ],
+  },
   'create-issue': {
     title: 'your-repo — claude',
     about: 'the create-issue skill turning one sentence into a GitHub issue',
@@ -527,10 +545,14 @@ function usageBlock(a) {
     ? 'This skill only runs when you ask for it by name — the agent never starts it on its own.'
     : 'You can also just describe the task in plain words — the agent picks the skill up by itself.';
   const term = SESSIONS[a.slug] ? `<p class="hint" style="margin-top:14px">What a run looks like:</p>${terminalHtml(SESSIONS[a.slug])}` : '';
+  // Claude-Code-only assets have no Codex form — surface the frontmatter `requires` line instead.
+  const platformHint = a.platform === 'claude-code'
+    ? `Claude Code only — this skill has no Codex form.${a.requires ? ` <strong>Requires:</strong> ${esc(a.requires)}.` : ''}`
+    : `That&rsquo;s the Claude Code form — in Codex, type <code>$${esc(a.name)}</code> instead, or just name the skill in plain words.`;
   return `<div class="usage"><h2>How to use it</h2>
 <p>Comes with the <strong>ai-devkit</strong> plugin (<a href="../getting-started.html">install — two commands</a>). Once installed, type this in any repo:</p>
 <span class="you-type">${esc(invocation)}</span>
-<p class="hint">${auto} That&rsquo;s the Claude Code form — in Codex, type <code>$${esc(a.name)}</code> instead, or just name the skill in plain words.</p>
+<p class="hint">${auto} ${platformHint}</p>
 ${term}
 <p class="hint">That&rsquo;s all you do — the agent runs the whole workflow itself. Curious, or want to audit it? The playbook it follows is collapsed under <strong>Under the hood</strong> below.</p></div>`;
 }
@@ -700,6 +722,18 @@ function journeyHtml(base) {
 // steps skipped, an estimated time saved, and an animated follow-up flow. Flow nodes that name a
 // shipped skill link to its catalog page. Trusted template data — authored here, never user input.
 const PICK_SCENARIOS = [
+  { id: 'orchestrate', icon: 'ti-compass', label: 'A big task, orchestrated', sub: 'Fable plans; agents write the code', title: 'your-repo — claude (fable)',
+    steps: [
+      { cls: 'cmd', html: `<span class="pr">&gt;</span> <span class="c">/fable-orchestrator migrate the sync layer to async/await</span>`, why: `One command turns the top model into a tech lead. It plans, briefs, and reviews instead of typing.` },
+      { cls: 'out', html: `Model check: <span class="gd">Fable</span> · this skill only runs on the Fable model`, why: `The gate is explicit. On Opus or Sonnet, the skill stops and says so because there is no tier gap.` },
+      { cls: 'out', html: `Plan: <span class="gd">3 briefs</span> · core (Opus · xhigh) · sweep (GPT-5.6 Sol · high) · audit (Kimi K3 · quality)`, why: `Lanes are picked by distinct strength and marginal cost. A CLI on a subscription you already pay for is a free parallel executor.` },
+      { cls: 'out', html: `3 parallel worktrees · the Kimi lane audits the <span class="gd">Opus</span> diff`, why: `A reviewer never shares a model family with the author because same-family models share blind spots.` },
+      { cls: 'ok', html: `&#10003; Merged serially · Fable authored <span class="gd">0 lines</span> itself`, why: `Fable handles each decision while cheaper agents generate the long implementation.` },
+    ],
+    tail: `That's <span class="gd">/fable-orchestrator</span>: Fable leads, cheaper models type. Fable-model sessions only.`,
+    byHand: ['Feed the whole task to one expensive context', 'Watch the top model burn tokens typing boilerplate', 'Re-explain everything after every compaction', 'Review the work with the same eyes that wrote it'],
+    saved: '≈ half the tokens', savedNote: 'with an independent review',
+    flow: [{ label: '/fable-orchestrator', slug: 'fable-orchestrator', on: true }, { label: '/smart-commit', slug: 'smart-commit' }, { label: '/ensure-tests', slug: 'ensure-tests' }, { label: '/finish-branch', slug: 'finish-branch' }] },
   { id: 'issue', icon: 'ti-bug', label: 'Report a bug, properly', sub: 'one sentence → a tracked issue', title: 'your-repo — claude',
     steps: [
       { cls: 'cmd', html: `<span class="pr">&gt;</span> <span class="c">/create-issue users stay logged in after deleting their account</span>`, why: `You report the problem in one sentence — that's the whole input.` },
@@ -782,7 +816,7 @@ const PICK_TRUST = [
 function pickHomeHtml(assets) {
   const known = new Set(assets.filter((a) => a.type === 'skill' || a.type === 'tool').map((a) => a.slug));
   // The skill a dev would run for each scenario; null = no single command (send them to Start here).
-  const USE_NOW = { issue: 'create-issue', commit: 'smart-commit', migrate: null, tests: 'ensure-tests', release: 'cut-rc', think: 'deepthink' };
+  const USE_NOW = { orchestrate: 'fable-orchestrator', issue: 'create-issue', commit: 'smart-commit', migrate: null, tests: 'ensure-tests', release: 'cut-rc', think: 'deepthink' };
   const scenarios = {};
   for (const p of PICK_SCENARIOS) {
     const un = USE_NOW[p.id];
@@ -815,9 +849,9 @@ function pickHomeHtml(assets) {
 function skillsShowcaseHtml(assets) {
   const all = assets.filter((a) => a.type === 'skill' || a.type === 'tool');
   if (!all.length) return '';
-  // Curated showcase: create-issue leads (it lands centered first), and a few skills sit out of the deck.
+  // Curated showcase: fable-orchestrator leads (it lands centered first), and a few skills sit out of the deck.
   const HIDE = new Set(['cleanup', 'ship-release', 'update-branch-plan']);
-  const ORDER = ['create-issue', 'issue-to-branch', 'smart-commit', 'ensure-tests', 'finish-branch', 'cut-rc', 'deepthink', 'devkit-init'];
+  const ORDER = ['fable-orchestrator', 'create-issue', 'issue-to-branch', 'smart-commit', 'ensure-tests', 'finish-branch', 'cut-rc', 'deepthink', 'devkit-init'];
   const rank = (a) => { const i = ORDER.indexOf(a.slug); return i === -1 ? ORDER.length + 1 : i; };
   const deck = all.filter((a) => !HIDE.has(a.slug)).sort((x, y) => rank(x) - rank(y) || (x.slug < y.slug ? -1 : 1));
   const cards = deck.map((a) => {

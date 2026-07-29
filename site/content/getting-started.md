@@ -117,11 +117,16 @@ The skills chain into one loop — from "someone found a bug" to "PR opened". Us
 | You've been coding and the tree is messy | `/smart-commit` | 2–5 atomic commits, plan shown first, never pushes |
 | Before you push | `/ensure-tests` | Decides what needs tests, runs the suite, fixes failures to 100% |
 | The work feels done | `/finish-branch` | Readiness checks, plan archived, PR opened or updated |
+| Starting a release | `/cut-rc --minor` | Pre-flights the integration branch, cuts an RC, bumps the version, and starts the build |
+| The release is approved | `/ship-release` | Tags the built commit, publishes the release, syncs branches, and cleans up the RC |
 | Anytime, before review | `/cleanup --branch` | Finds debug prints, leftover comments, commented-out code |
 | Stuck on something genuinely hard | `/deepthink …the problem…` | Structured extended reasoning → an implementation strategy |
 | A bug won't reproduce or won't die | `/ultrafix …the symptom…` | Isolated worktrees + structured logging → root cause + verified fix |
 | Want a second agent's take | `/codex-buddy review this branch` | Codex reviews or debugs independently; Claude cross-checks the findings |
+| Want a third, uncorrelated opinion | `/kimi-buddy review this branch` | Kimi tackles huge context, vision-plus-code, or long-horizon work; the primary agent cross-checks it |
+| A big task to orchestrate across agents | `/fable-orchestrator` | Fable plans, briefs, reviews, and merges while cheaper agents write every line of code; requires Fable as the main-loop model |
 | The plan drifted from reality | `/update-branch-plan` | Conservatively syncs plan checkboxes with your commits |
+| Setting up the whole loop in a repo | `/devkit-init` | Analyzes the stack, proposes an adapted pipeline, then scaffolds only what you approve |
 
 The "You type" column shows the Claude Code form — in Codex, type `$the-name` instead (e.g. `$smart-commit`), or just name the skill in plain words.
 
