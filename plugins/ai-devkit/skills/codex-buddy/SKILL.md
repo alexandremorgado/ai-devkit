@@ -1,20 +1,22 @@
 ---
 name: codex-buddy
-description: Bring in a second AI agent — OpenAI's Codex — for an independent review, a second opinion, deeper debugging, a security audit, or a delegated implementation. Your primary agent gathers repo context, runs Codex non-interactively, then critically cross-checks what comes back. Works on any repo.
+description: Invoke Codex CLI from another harness for review or scoped implementation. Native Codex uses native delegation.
 user-invocable: true
 argument-hint: What you want the second agent to do (e.g., 'review my changes on this branch', 'second opinion on this design', 'debug this failing test')
 allowed-tools: ["Bash", "Read", "Grep", "Glob", "AskUserQuestion", "Task"]
-summary: Use a second AI agent (Codex) for review, a second opinion, debugging, an audit, or delegated implementation — context-enriched, run non-interactively, and cross-checked rather than trusted blindly. Any repo.
+summary: Invoke the Codex CLI from another harness for review, diagnosis, audit, or delegated implementation — enrich context, run non-interactively, and cross-check the result. Native Codex sessions use native delegation instead. Any repo.
 example: "/codex-buddy review my changes on this branch"
 type: skill
 category: workflow
 platform: cross
 portability: adaptable
 publish: public
-adaptation_notes: "Built on the Codex CLI (`codex exec` / `codex review`). The pattern — primary agent enriches a prompt with repo context, runs a second agent read-only for analysis or write-capable for changes, then cross-checks the output — ports to any second-agent CLI or MCP. Swap the binary and its model/effort/sandbox flags; keep the enrich → run → critically-evaluate loop and the read-only-by-default safety."
+adaptation_notes: "For a non-Codex harness invoking the Codex CLI. The pattern — enrich a prompt with repo context, run a second agent read-only for analysis or write-capable for changes, then cross-check the output — ports to another second-agent CLI or MCP. Swap the binary and its model/effort/sandbox flags; keep the enrich → run → critically-evaluate loop and the read-only-by-default safety."
 ---
 
 # Codex Buddy
+
+This skill is for a non-Codex agent or harness that needs to invoke the Codex CLI. If you are already running as Codex, use native delegation facilities, including `astra-orchestrator` where installed, instead of routing through this CLI wrapper.
 
 Two agents are better than one. Your primary agent stays in the driver's seat; when you want an independent check, it hands a context-rich prompt to a **second agent — OpenAI's Codex** — runs it non-interactively, then **critically evaluates** the result instead of taking it as gospel. Use it for a second opinion, a code review, a deeper debugging pass, a security audit, a test-gap analysis, or to delegate a focused implementation.
 
