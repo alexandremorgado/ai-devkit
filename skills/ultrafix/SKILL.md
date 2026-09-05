@@ -1,39 +1,45 @@
 ---
 name: ultrafix
-description: Systematically debug a stubborn bug using isolated git worktrees for parallel hypothesis testing plus structured debug logging, converging on a root cause and a verified fix. Works on any repo.
+description: Debug a stubborn bug with bounded diagnosis and a minimal verified fix; use isolated git worktrees for parallel hypotheses only when useful and authorized, with focused debug logging. Works on any repo.
 user-invocable: true
 argument-hint: Description of the bug (symptoms, when it happens, what you've tried)
 allowed-tools: ["Bash", "Read", "Write", "Edit", "Grep", "Glob", "Task"]
-summary: Debug a stubborn bug with isolated git worktrees for parallel hypothesis testing plus structured logging — reproduce, isolate, find root cause, verify a minimal fix, clean up. Any repo.
+summary: Debug a stubborn bug with bounded diagnosis and a minimal verified fix — reproduce or inspect, optionally isolate, identify the root cause, validate within scope, and clean up. Any repo.
 example: "/ultrafix tests flake on ci but pass locally"
 type: skill
 category: workflow
 platform: cross
 portability: adaptable
 publish: public
-adaptation_notes: "Adapt the logging mechanism and the test/reproduce command to your stack (detect the project's test command the same way the rest of the toolkit does). The worktree-per-hypothesis isolation and the evidence-before-fix discipline are portable as-is."
+adaptation_notes: "Adapt the logging mechanism and reproduction probe to your stack. Use worktree-per-hypothesis isolation only when multiple hypotheses need it and the user authorizes that scope; preserve the evidence-before-fix discipline."
 ---
 
 # Ultrafix
 
-Hunt down a hard bug methodically instead of guessing. The core idea: **reproduce first, isolate hypotheses in separate git worktrees so you can test several at once without polluting your workspace, add structured logging to see what's actually happening, and only fix once the evidence names a root cause.** Evidence before fix, always.
+Diagnose a stubborn bug from reproducible or inspectable evidence, then implement one minimal fix. Use isolated worktrees only when competing hypotheses need parallel investigation within the authorized scope.
 
 ## Bug Description:
 $ARGUMENTS
 
+## Validation and Test Scope
+
+Test commands and test creation require explicit user authorization in the current session or an active test-owning skill (`ensure-tests`, `finish-branch`, `generating-tests`, `modernize-tests`). If that authority is absent, use manual, runtime, log, or static evidence and report skipped test validation.
+
+**Writing tests is banned by default (HARD).** Never create, extend, or rewrite test files unless I explicitly ask in the session or a test-owning skill is running (`ensure-tests`, `finish-branch`, `generating-tests`, `modernize-tests`). If a session surfaces a genuine test opportunity (coverage gap on validated behavior, stale test, regression worth pinning), propose it and ask permission with `request_user_input`, naming what would be tested and why; write only after I approve. When a change breaks an existing test, fix the code; rewrite the test only when I say the test was wrong. Running tests follows the same gate: no runs during iteration, no fix→re-test loops. Delegation briefs carry the ban verbatim.
+
 ## Workflow
 
-### Phase 1: Reproduce Reliably
+### Phase 1: Reproduce or Gather Evidence
 
-You cannot fix what you can't trigger on demand.
+Choose the smallest reproduction or diagnostic probe that fits the authorized scope. Prefer a manual, runtime, log, or static probe when no test authority is active. If `$REPRODUCE_CMD` is a test command, run it only at an authorized validation checkpoint.
 
 ```bash
-# Detect the project's test/run command (CI workflow first, then manifest/Makefile) — don't hardcode it.
-# Then run the minimal reproduction and capture the exact failure.
+# Detect the project's run or diagnostic command (CI workflow first, then manifest/Makefile) — don't hardcode it.
+# At an authorized validation checkpoint, capture the exact failure:
 $REPRODUCE_CMD 2>&1 | tee /tmp/ultrafix-repro.log
 ```
 
-Pin down: exact command, environment, frequency (always vs flaky), and the precise error/symptom. If it's intermittent (e.g. "flakes on CI"), note the variables that differ between passing and failing runs (parallelism, ordering, timezone, network, clock, resource limits). **If you cannot reproduce it at all, stop and gather more signal** — a fix you can't verify is a guess.
+Pin down the exact command, environment, frequency (always vs flaky), and precise error or symptom. If the issue is intermittent, note variables that differ between passing and failing runs (parallelism, ordering, timezone, network, clock, resource limits). If reproduction is unavailable, gather enough signal to state or reject a root cause; if the cause remains unclear, stop and report the blocker instead of guessing.
 
 ### Phase 2: Form Hypotheses
 
@@ -45,23 +51,24 @@ H2 — Race: an async task isn't awaited, so assertions run before it completes.
 H3 — Environment: CI's timezone/locale differs and a date comparison flips.
 ```
 
-Rank by likelihood × cheapness to test. Use the Task tool to investigate the codebase for evidence supporting or killing each one before spinning up worktrees.
+Rank by likelihood × cheapness to investigate. Use the Task tool only when parallel investigation is useful and the user has authorized that scope; otherwise inspect the evidence directly before any worktree is created.
 
-### Phase 3: Isolate Each Hypothesis in a Worktree
+### Phase 3: Isolate Hypotheses When Useful
 
-Give every non-trivial hypothesis its **own git worktree** so probes (extra logging, a candidate fix, a config tweak) never collide and can run in parallel:
+If the root cause is already clear, skip hypothesis fanout and implement one minimal fix in the current branch or one authorized isolated worktree. When multiple independent hypotheses need isolation and the user has authorized parallel work, give each selected hypothesis its own git worktree:
 
 ```bash
 ROOT=$(git rev-parse --show-toplevel)
 BASE=$(git branch --show-current)
 
-for H in h1 h2 h3; do
+# Keep the set bounded; add worktrees only for useful, authorized probes.
+for H in h1 h2; do
   git worktree add -b "ultrafix/$H" "../${ROOT##*/}-$H" "$BASE"
 done
 git worktree list
 ```
 
-Each worktree is a clean, independent checkout: instrument H1 in one, try a fix for H2 in another, and they don't interfere.
+Each authorized worktree is a clean, independent checkout: instrument one selected hypothesis, try a candidate fix in another when useful, and keep probes from colliding.
 
 ### Phase 4: Add Structured Debug Logging
 
@@ -77,38 +84,34 @@ Conventions that pay off:
 - Log **inputs, branch taken, and timing** at each fork — enough to reconstruct the actual execution order.
 - For races/flakes, log timestamps and which task/thread emitted the line.
 
-### Phase 5: Test Each Hypothesis in Isolation
+### Phase 5: Bounded Validation of Selected Hypotheses
 
-Run the reproduction in each worktree and read the structured output:
+Use the smallest appropriate probe for each selected hypothesis and read the structured output. Test or reproduction commands that exercise tests require the authorization described above; otherwise use non-test evidence and record the skipped test validation:
 
 ```bash
+# At an explicitly authorized validation checkpoint:
 ( cd "../${ROOT##*/}-h2" && $REPRODUCE_CMD 2>&1 | tee /tmp/ultrafix-h2.log )
 grep '\[ULTRAFIX h2\]' /tmp/ultrafix-h2.log
 ```
 
-For flaky bugs, **loop** the run to make the signal statistically real:
+For flaky bugs, repeat a run only when the user explicitly authorizes that validation checkpoint. Do not run tests during iteration or start automatic fix → re-test loops.
 
-```bash
-( cd "../${ROOT##*/}-h2"; for i in $(seq 1 20); do $REPRODUCE_CMD >/dev/null 2>&1 && echo "run $i PASS" || echo "run $i FAIL"; done )
-```
-
-Each result confirms or kills a hypothesis. Kill the wrong ones explicitly — narrowing is progress.
+Each result confirms or kills a hypothesis. Kill the wrong ones explicitly — narrowing is progress. Report any skipped validation and remaining uncertainty.
 
 ### Phase 6: Name the Root Cause
 
-Converge on **one** explanation that the evidence supports end-to-end: the logs show the bad state arising, the isolating worktree reproduces it, and removing the cause makes it stop. Write the root cause in one or two sentences — *what* is wrong and *why* it produces the symptom. Don't fix until you can state this.
+Converge on one explanation supported end-to-end by the available evidence. Logs and isolation when used should show the bad state and why it produces the symptom; static or runtime evidence may be sufficient when the cause is clear. Write the root cause in one or two sentences. Do not fix until you can state what is wrong and why it produces the symptom.
 
-### Phase 7: Implement a Minimal Fix + Verify
+### Phase 7: Implement One Minimal Fix + Report Evidence
 
-In the winning worktree (or back on `$BASE`), make the **smallest** change that addresses the root cause — no opportunistic refactors riding along.
+In the winning worktree (or back on `$BASE`), make the **smallest** change that addresses the root cause — no opportunistic refactors riding along. Validate at an explicitly authorized checkpoint when test authority exists; otherwise use non-test evidence and report the skipped test validation:
 
 ```bash
-# Verify against the original reproduction. For flakes, loop enough to trust it.
+# At an explicitly authorized validation checkpoint:
 $REPRODUCE_CMD 2>&1 | tee /tmp/ultrafix-verify.log
-# Flaky case: confirm a long green streak (e.g. 20–50 runs) before believing it.
 ```
 
-A fix is "verified" only when the reproduction that used to fail now passes repeatedly — not when the code "looks right."
+Treat the fix as verified only to the level supported by the available evidence. Do not run automatic fix → re-test loops or claim stronger validation than was performed.
 
 ### Phase 8: Clean Up
 
@@ -117,34 +120,32 @@ A fix is "verified" only when the reproduction that used to fail now passes repe
 ```bash
 # 1) Salvage check: any commit listed here is UNIQUE to a scratch branch — move it to your
 #    working branch before cleanup, or you will lose it.
-for h in h1 h2 h3; do git log --oneline "$BASE..ultrafix/$h" 2>/dev/null; done
+for h in h1 h2; do git log --oneline "$BASE..ultrafix/$h" 2>/dev/null; done
 
 # 2) Remove every debug probe you added.
 grep -rn 'ULTRAFIX' .
 
-# 3) Tear down the scratch worktrees, then delete the branches with -d (NOT -D).
+# 3) Tear down only scratch worktrees created by this invocation, then delete their branches with -d (NOT -D). Leave unrelated or pre-existing worktrees alone.
 #    -d refuses to delete a branch with unmerged commits, so it can't silently drop the fix.
 git worktree remove "../${ROOT##*/}-h1"
 git worktree remove "../${ROOT##*/}-h2"
-git worktree remove "../${ROOT##*/}-h3"
-git branch -d ultrafix/h1 ultrafix/h2 ultrafix/h3   # errors here = unsalvaged commits; review before forcing
-git worktree prune
+git branch -d ultrafix/h1 ultrafix/h2   # errors here = unsalvaged commits; review before forcing
 ```
 
-Only fall back to `git branch -D` after you have confirmed the branch's unique commits are already on your working branch. Leave only the minimal fix (plus a regression test, if one was missing) on the working branch.
+Only fall back to `git branch -D` after you have confirmed the branch's unique commits are already on your working branch. Leave only the minimal fix and any explicitly authorized test work on the working branch.
 
 ## Quick Reference
 
 ### The loop
-Reproduce → hypothesize → isolate (worktree) → instrument → test → root cause → minimal fix → verify → clean up.
+Reproduce or inspect → hypothesize → optionally isolate (worktree) → instrument → bounded validation → root cause → one minimal fix → report evidence → clean up.
 
 ### Discipline
-- **No fix without a reproduction.** If you can't trigger it, you can't verify it.
+- **No fix without evidence.** A reproducible failure is preferred; if it is unavailable, static, log, or runtime evidence must support the root cause.
 - **Evidence before fix.** Logs + isolation name the cause; you don't guess it.
-- **One hypothesis per worktree.** Parallel probes, zero cross-contamination.
+- **One hypothesis per authorized worktree.** Parallel probes are optional and must have useful, authorized scope.
 - **Minimal fix.** Address the root cause only; no drive-by refactors.
-- **Verify by repetition** for flakes — one green run proves nothing.
+- **Repeat validation only when explicitly authorized** for flakes; one run may be insufficient, and skipped validation must be reported.
 
 ### Cheatsheet
-- Worktree: `git worktree add -b ultrafix/hN ../repo-hN <base>` → `git worktree remove <path>` → `git worktree prune`.
+- Worktree: `git worktree add -b ultrafix/hN ../repo-hN <base>` → `git worktree remove <path>`.
 - Logging: tag every probe (`[ULTRAFIX hN] …`) so it greps cleanly and is trivial to delete; log inputs, branch taken, timing; add timestamps/thread for races.
