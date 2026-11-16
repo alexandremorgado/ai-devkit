@@ -16,7 +16,7 @@ adaptation_notes: "For a non-Codex harness invoking the Codex CLI. The pattern �
 
 # Codex Buddy
 
-This skill is for a non-Codex agent or harness that needs to invoke the Codex CLI. If you are already running as Codex, use native delegation facilities, including `astra-orchestrator` where installed, instead of routing through this CLI wrapper.
+This skill is for a non-Codex agent or harness that needs to invoke the Codex CLI. If you are already running as Codex, use native delegation facilities instead of routing through this CLI wrapper.
 
 Two agents are better than one. Your primary agent stays in the driver's seat; when you want an independent check, it hands a context-rich prompt to a **second agent — OpenAI's Codex** — runs it non-interactively, then **critically evaluates** the result instead of taking it as gospel. Use it for a second opinion, a code review, a deeper debugging pass, a security audit, a test-gap analysis, or to delegate a focused implementation.
 
@@ -50,7 +50,7 @@ Skip it for trivial tasks the primary agent can finish in one step, and always r
 ## Workflow
 
 ### 1. Pick the mode and reasoning depth
-Map the request to a mode above. Choose a model and reasoning effort — bias to **higher effort for `plan` and `audit`** (architecture and security reward deep reasoning), normal effort for the rest. If the user didn't specify, ask once with `AskUserQuestion` rather than guessing.
+Map the request to a mode above. Choose a model and reasoning effort — bias to **higher effort for `plan` and `audit`** (architecture and security reward deep reasoning), normal effort for the rest. If the user didn't specify, ask once with `AskUserQuestion` rather than guessing. Pass the effort explicitly on every call, resumed turns included: a model's catalog default can sit below what the task needs.
 
 ### 2. Gather context (keep it lightweight)
 Curated context beats dumping the whole repo. Collect only what the mode needs:
