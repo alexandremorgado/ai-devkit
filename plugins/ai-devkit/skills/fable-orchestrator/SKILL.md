@@ -72,12 +72,14 @@ Pick the lane by task shape, not by how busy the lanes are:
 | Task shape | Lane |
 |---|---|
 | Plan, design, review, diagnosis, merge decisions | Fable main loop; this is the seat |
-| Complex / multi-file implementation, tricky refactors, migrations, concurrency work | Claude Opus subagent, effort `xhigh` |
-| Routine, well-scoped implementation with a precise brief | Claude Opus subagent, `medium`–`high` |
+| Complex / multi-file implementation, tricky refactors | Claude Opus subagent, effort `medium` |
+| Brownfield fixes with edge cases, migrations, long terminal-heavy runs, subtle concurrency | Claude Opus subagent, `high`; `xhigh` only with a stated reason |
+| Routine, well-scoped implementation with a precise brief | Claude Opus subagent at `medium`, or the Codex bounded lane below |
 | Simple bounded mechanical work: boilerplate, renames, doc-mirroring, bulk transforms | Claude Sonnet subagent, `high` |
 | Trivial high-volume sweeps: grep-and-report, mass mechanical rewrites | Claude Haiku subagent |
-| Test authoring / fixing / running (any complexity) | Always a subagent: Opus `xhigh` for design-heavy suites, Sonnet `high` for mechanical coverage; never the main loop |
-| Second opinion, independent review, audits, parallel implementation | OpenAI Codex (GPT-5.6; tiers Sol / Terra / Luna, high effort for audits and design) |
+| Test authoring / fixing / running (any complexity) | Always a subagent: Opus `medium` for design-heavy suites, Sonnet `high` for mechanical coverage; never the main loop |
+| Second opinion, independent review, audits, diagnosis, design critique | OpenAI Codex: GPT-6.1 Sol at `xhigh`, or `max` for the hardest problems; never lower |
+| Parallel bounded implementation when the brief carries the decision | OpenAI Codex: GPT-6 Luna at `max` (`medium` for tiny, latency-bound tasks) |
 | Third uncorrelated opinion, million-token evidence, vision-plus-code, long-horizon agentic coding | Moonshot Kimi (K3) |
 | Read-only codebase sweeps to feed a plan | Explore / general-purpose agent, default model |
 
@@ -102,12 +104,14 @@ briefs, and review verdicts. Executors absorb the token-heavy implementation, so
 moment, then return to `high`.
 
 The orchestrator sizes executor effort per task. Use the lowest effort that reliably clears
-the bar: `xhigh` is the starting point for non-trivial coding briefs, `medium` is strong for
-routine well-scoped work, and `max` is reserved for genuinely frontier problems, not "to be
-safe". Effort controls thinking volume, not response length.
+the bar: `medium` is the default at every Opus seat (code quality peaks there), `high` suits
+long terminal-heavy or migration work, and `max` is reserved for genuinely frontier problems,
+not "to be safe". Effort controls thinking volume, not response length. For Codex lanes, pass
+the effort explicitly on every dispatch, including resumed turns: a model's catalog default
+can sit below the level the task needs.
 
 Two mechanics worth setting up once: **pinned-effort agent definitions**
-(`~/.claude/agents/implementer.md` with Opus + `effort: xhigh`, `mechanic.md` with Sonnet +
+(`~/.claude/agents/implementer.md` with Opus + `effort: medium`, `mechanic.md` with Sonnet +
 `effort: high`) give the standing lanes in one `Agent` call; and parallel implementers that
 mutate files MUST run in **worktree isolation**, each producing one commit on its worktree
 branch, with Fable merging serially and building once per merge.
@@ -183,8 +187,8 @@ every dispatch, return, revise, and merge:
 
 | Lane | Work | Model / effort | Status |
 |---|---|---|---|
-| Core | sync engine → async/await | Opus · xhigh | running |
-| Sweep | 61 call sites | GPT-5.6 Sol · high | returned |
+| Core | sync engine → async/await | Opus · high | running |
+| Sweep | 61 call sites | GPT-6 Luna · max | returned |
 | Audit | cross-family review of core | Kimi K3 · quality | ✅ done |
 
 Name the real model and effort, never just "subagent." On a mixed board that column is how
